@@ -59,7 +59,7 @@ window.AVCanto = function (G) {
       'body.canto-on :is(#stick,#acts,#v18-exp-poder,#v18-extra,#prompt,#toast,#modo-salir,#quest,#inv,#b-diary,#b-emotes,#b-menu,#b-construir,#b-nido,#minimapa,#marcador,#top,#sys,#guia-hud,#title,#creator,#card){visibility:hidden!important}' + // el juego tapa todo: sin HUD, portada ni creador detrás (F22: tampoco «Controles»)
       // T51: en horizontal (teléfono tumbado) las cuatro en una fila, del tamaño que deja el alto; «Salir» siempre a la vista
       '@media (orientation:landscape) and (max-height:560px){#canto .c-caja{width:min(900px,100%);gap:8px}#canto h2{font-size:21px}#canto .c-msg{min-height:1.2em;margin:0}' +
-      '#canto .c-aves{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:min(100%,calc((100dvh - 170px) * 4 + 30px))}#canto .c-ave{border-radius:20px;font-size:15px}#canto .c-bots button{min-height:44px}}' +
+      '#canto .c-aves{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:min(100%,calc((100dvh - 270px) * 4 + 24px))}#canto .c-ave{border-radius:20px;font-size:15px;max-height:calc(100dvh - 250px)}#canto .c-bots{margin-top:0}#canto .c-bots button{min-height:44px}}' +
       '@media (prefers-reduced-motion:reduce){#canto .c-ave{transition:none}#canto .c-ave.luz{transform:none}#canto.c-turno .c-msg,#canto.c-bien .c-ave,#canto.c-listo .c-ave{animation:none}#canto .c-notas i.va{transform:none}}' +
       '#canto.c-bien .c-ave{animation:c-respira .4s ease-in-out 2}#canto.c-listo .c-ave{animation:c-respira .42s ease-in-out 1}' +
       // PULIR 4 (revisión): título 26 px (21 en horizontal bajo) y mensaje 17 px como el panel común; al terminar, número grande, botones de 54 px y sin las cuatro aves debajo

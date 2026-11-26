@@ -70,7 +70,8 @@ window.AVEscondite = function (G) {
         '#esc-hud .esc-pista.tibio{color:#ffe7b0}' +
         'body.escondite-on:has(#esc-fin:not([hidden])) :is(#stick,#acts,#minimapa,#marcador){visibility:hidden!important}' + // PULIR 4 (revisión): con el panel final, sin joystick ni botones de vuelo detrás (como los demás)
         // F20 r2: el aviso de inicio va debajo de la barra (se cruzaban); al terminar, el resultado lo dice la barra (sin aviso detrás)
-        '@media (orientation:landscape){body.escondite-on #toast{top:calc(env(safe-area-inset-top,0px) + 80px)!important;bottom:auto!important}}';
+        '@media (orientation:landscape){body.escondite-on #toast{top:calc(env(safe-area-inset-top,0px) + 80px)!important;bottom:auto!important}}' +
+        '@media (orientation:landscape) and (max-height:500px){#esc-hud{flex-wrap:nowrap;max-width:min(640px,calc(100vw - 160px));padding:4px 8px;gap:8px}#esc-hud .esc-pista{flex:0 1 auto}}';
       document.head.appendChild(st);
       hudEl = document.createElement('div'); hudEl.id = 'esc-hud'; hudEl.hidden = true; hudEl.setAttribute('role', 'status');
       hudEl.innerHTML = '<b data-k="t"></b><span data-k="n"></span><span data-k="r"></span><span class="esc-pista" data-k="h"></span><button type="button" data-a="otra" hidden></button><button type="button" class="salir" data-a="salir"></button>';
@@ -124,6 +125,7 @@ window.AVEscondite = function (G) {
     modo = true; resultado = ''; quitarFin(); crearPichones();
     empezar(S.pos.x, S.pos.z, { reales: true });
     hud().hidden = false; document.body.classList.add('escondite-on'); pintarHud();
+    try { G.fx.burst(S.pos.x, S.pos.y + 0.8, S.pos.z, 'feathers', 8); } catch (e) { /* */ }
     try { if (G.menuModos && G.menuModos.encuadrar) G.menuModos.encuadrar(); } catch (e) { /* sin menú */ } // F20 r2: sin ladera ni techo delante de la cámara
     return true;
   }
