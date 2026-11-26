@@ -155,7 +155,10 @@
     historia: {
       // CG-38: 6 pasos. El Guardián, Mara y Vela y la medalla se quedan. El id «estaciones» sigue (QA-86).
       pasos: [
-        { id: 'ondas', texto: 'Habla con Iguaca y separa las dos ondas', hasta: { recogido: VOZ }, guia: G => (G.S.edu && G.S.edu.inicio) ? G.misiones.at('trx') : G.misiones.at('iguaca') },
+        { id: 'ondas', texto: 'Habla con Iguaca y separa las dos ondas', hasta: { recogido: VOZ }, guia: G => {
+          if (G.S.edu && G.S.edu.inicio) return G.misiones.at('trx');
+          const p = G.misiones.at('iguaca'); return p ? { x: p.x + 2.2, z: p.z } : null; // el haz, al lado: de noche era una columna sobre ella
+        } },
         { id: 'mensaje', texto: 'Copia el patrón y ordena el mensaje', hasta: { evento: 'FragmentsOrdered' }, guia: G => G.misiones.at('trx') },
         { id: 'ruinas', texto: 'Lee las ruinas y escucha al Guardián', hasta: { evento: 'GuardianRemembered' },
           guia: G => { const p = G.S.pos, r = (window.AV_EP5.ruinas || []).filter(x => !G.S.collected.includes('cls_' + x.id)).sort((a, b) => Math.hypot(a.x - p.x, a.z - p.z) - Math.hypot(b.x - p.x, b.z - p.z))[0]; return r ? { x: r.x, z: r.z } : G.misiones.at('guardian'); } },
@@ -250,10 +253,17 @@
         if (G.quiet || !p || !G.camara || !G.S) return;
         const dx = p.x - G.S.pos.x, dz = p.z - G.S.pos.z, n = Math.hypot(dx, dz) || 1;
         if (G.S.facing) { G.S.facing.x = dx / n; G.S.facing.z = dz / n; }
-        G.camara.yaw = Math.atan2(-dx, -dz);
-        G.camara.inclina = 0.22; // el aviso de arriba no tapa la cara de quien está delante
+        // De frente, a 390, la cabeza de Vittata tapa a Iguaca y solo se ve la corona. Un poco al lado: ella queda entera, a la derecha. La noche no cambia.
+        G.camara.yaw = Math.atan2(-dx, -dz) - 0.62;
+        G.camara.inclina = 0.22;
         try { G.camara.manual(); G.camara.place(true); } catch (e) { /* sin cámara */ }
       };
+      if (!document.getElementById('ep5-ciclo4')) {
+        const st = document.createElement('style'); st.id = 'ep5-ciclo4';
+        st.textContent = '@media (max-width:560px){body.av-ep5 #toast{top:calc(env(safe-area-inset-top, 0px) + 86px)}}';
+        document.head.appendChild(st);
+      }
+      document.body.classList.add('av-ep5');
       mirar(IGUACA);
       if (!G.quiet && G.fx && G.fx.burst && G.terreno) {
         try { G.audio.play('aviso'); } catch (e) { /* sin audio */ }
@@ -489,6 +499,7 @@
         const caja = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.36, 0.4), mat('#3c4654')); caja.position.set(TRX.x - 0.1, yMesa + 0.22, TRX.z); scene.add(caja);
         const rueda = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.05, 14), mat('#c9a227'));
         rueda.position.set(TRX.x - 0.1, yMesa + 0.22, TRX.z + 0.21); rueda.rotation.set(Math.PI / 2, 0, 0); scene.add(rueda);
+        if (!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) G.on('update', () => { rueda.rotation.y = Math.sin((S.clock || 0) * 1.4) * 0.4; }, 43); // el dial del transmisor se mueve: de noche se nota que está vivo
         G.fisica.colliders.push({ x: TRX.x, z: TRX.z, r: 0.7, h: yMesa + 0.4 - H(TRX.x, TRX.z), kind: 'obj' }); }
       kit('toldo_pequeno', 3.4).then(w => { const x = TRX.x + 1.7, z = TRX.z - 0.9; w.position.set(x, H(x, z) - 0.15, z); w.rotation.y = -0.5; scene.add(w); }).catch(() => {});
       const antena = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.6, 6), new THREE.MeshLambertMaterial({ color: '#c5ccd6' }));
@@ -799,7 +810,8 @@
         G.dialogo.say([di('Vittata', S.complete ? 'El transmisor quedó en silencio. Las voces ya se oyeron.' : 'El transmisor espera.')]);
       }
 
-      const itIguaca = G.interaccion.add({ id: 'iguaca', x: IGUACA.x, z: IGUACA.z, r: 2.4, label: () => S.step === 5 && !G.eventos.had('HelpAsked') ? 'Pedir ayuda' : 'Hablar con Iguaca', use: hablarIguaca });
+      // Al empezar hay unos 3 m: con 2,4 el botón Acción seguía apagado aunque ella se viera. 3,6 la alcanza desde el arranque.
+      const itIguaca = G.interaccion.add({ id: 'iguaca', x: IGUACA.x, z: IGUACA.z, r: 3.6, label: () => S.step === 5 && !G.eventos.had('HelpAsked') ? 'Pedir ayuda' : 'Hablar con Iguaca', use: hablarIguaca });
       G.interaccion.add({ id: 'guardian', x: GUARDIAN.x, z: GUARDIAN.z, r: 2.4, label: () => S.step === 2 && G.eventos.had('RuinsRead') ? 'Escuchar al Guardián' : 'Hablar con el Guardián', use: fichas });
       const itAprendiz = G.interaccion.add({ id: 'aprendiz', x: APRENDIZ.x, z: APRENDIZ.z, r: 2.2, label: () => 'Hablar con el aprendiz', use: () => G.dialogo.say([di('Aprendiz', G.eventos.had('HelpAsked') ? 'Yo sostengo mi estación. Tú sigue.' : 'Si hace falta otra persona, aquí estoy.')]) });
       G.interaccion.add({ id: 'trx', x: TRX.x, z: TRX.z, r: 2.4, label: () => {
