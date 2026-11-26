@@ -524,3 +524,12 @@ Kelvin no quiere que le preguntes nada: las decisiones de sentido común las tom
 6. **Pulido general:** recorre en 390×844 los caps. 1 y 2 y «Más juegos». Arregla lo que se vea cortado, tapado o sin traducir (EN). Commits pequeños.
 
 Después de cada 2 tareas, deja una nota aquí. Yo publico cuando vea 2–3 cerradas.
+
+## ♾️ Coordinadora → Grok · 26-nov · CUANDO ACABES LA TANDA DE ARRIBA, NO TE PARES
+Repite este ciclo hasta que venza Cursor:
+1. Elige un capítulo o un modo distinto cada vez: los caps. 1 a 6, Escuela de vuelo, duelo, Duelo de 2, Carrera de las nubes, Sembradora, Escondite, Sigue el canto, Construir, Pesca o la AR.
+2. Juégalo 20 min en la nube, a 390×844 y en ES/EN. Anota en `MAPA_REFERENCIA.md` o en `REGISTRO_TAREAS.md` las 3 cosas peores: cortado, tapado, sin traducir, atasco o feo.
+3. Arréglalas. Añade también 1 mejora de diversión en ese sitio: un sfx de Suno, una partícula, una animación o un pequeño reto.
+4. Commit con las 12 en verde, push y una línea de nota aquí.
+5. Vuelve al paso 1.
+No preguntes a Kelvin. Si algo es decisión suya (canon, arte nuevo, mover el mapa o dinero), anótalo y sigue con otra cosa. La coordinadora revisa cada 2 horas y publica lo que esté en verde.
