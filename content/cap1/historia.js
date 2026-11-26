@@ -372,6 +372,7 @@
             charlaLuma = false;
             for (const k in REGALO_LUMA) S.inv[k] += REGALO_LUMA[k];
             G.objetos.renderInv(); G.audio.play('pickup', 2);
+            try { G.fx.burst(S.pos.x, S.pos.y + 1.2, S.pos.z, 'feathers', 12); } catch (e) { /* sin efectos */ }
             log('LumaHelped'); advanceTo(1);
             toast(S.step >= 2 ? '+3 madera de la familia de Iguaca. Ahora, a juntar los materiales.' : '+3 madera de la familia de Iguaca. Pasa por tu taller: revisa la máquina y el transmisor.', 4500);
           });
