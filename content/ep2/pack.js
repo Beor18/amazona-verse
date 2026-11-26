@@ -537,8 +537,12 @@
         const yTabla = tabla.position.y;
         G.on('update', () => { const t = (G.S && G.S.clock) || 0; tabla.position.y = yTabla + Math.sin(t * 1.4) * 0.03; tabla.rotation.z = Math.sin(t * 0.9) * 0.08; }, 74);
         G.fisica.colliders.push({ x, z, r: 1, h: 1.4, kind: 'obj' });
-        G.on('aula', (k) => { if (k === 'idioma') pintar(); });
-        G.on('apply', pintar, 76);
+        // El aula cambia el idioma por su propia función, no por G.idioma.poner. El oyente del
+        // idioma va antes (prioridad 50 y 90): aquí se espera a su promesa, o el rótulo se pinta
+        // en español y ya no se vuelve a tocar.
+        const pintarIdioma = () => Promise.resolve(G.idioma && G.idioma.listo).then(pintar);
+        G.on('aula', (k) => { if (k === 'idioma') pintarIdioma(); }, 60);
+        G.on('apply', pintarIdioma, 95);
         if (document.fonts && document.fonts.ready) document.fonts.ready.then(pintar);
       }
       // La rama del papá: un tronco seco con una rama larga, donde se va volando al ver el plano
