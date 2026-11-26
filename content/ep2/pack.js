@@ -270,7 +270,18 @@
       ],
     },
 
-    inicio(G) { G.eventos.log('StormWarning'); G.dialogo.say(G.dialogo.L('inicio:ep2'), () => G.ui.toast('Habla con Iguaca', 3000)); },
+    inicio(G) {
+      G.eventos.log('StormWarning');
+      const mirar = p => {
+        if (G.quiet || !p || !G.camara || !G.S) return;
+        const dx = p.x - G.S.pos.x, dz = p.z - G.S.pos.z, n = Math.hypot(dx, dz) || 1;
+        if (G.S.facing) { G.S.facing.x = dx / n; G.S.facing.z = dz / n; }
+        G.camara.yaw = Math.atan2(-dx, -dz);
+        try { G.camara.manual(); G.camara.place(true); } catch (e) { /* sin cámara */ }
+      };
+      mirar(LUMA); // Iguaca quedaba al borde izquierdo, debajo del aviso
+      G.dialogo.say(G.dialogo.L('inicio:ep2'), () => { mirar(LUMA); G.ui.toast('Habla con Iguaca', 3000); });
+    },
 
     preparar(G) {
       const S = G.S, H = G.terreno.height, L = G.dialogo.L;
@@ -508,24 +519,27 @@
         }
         function pintar() { lienzo((G.idioma && G.idioma.tr) ? G.idioma.tr(ROTULO) : ROTULO); }
         pintar();
+        if (G.idioma && G.idioma.poner) {
+          const poner0 = G.idioma.poner;
+          Promise.resolve(poner0.call(G.idioma, (G.aula && G.aula.aj && G.aula.aj.idioma) || 'es')).then(pintar);
+          G.idioma.poner = function (l) { const r = poner0.apply(this, arguments); Promise.resolve(r).then(pintar); return r; };
+        }
         const t = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 0.78), matSign);
         t.name = 'letrero_ep2'; t.castShadow = true;
         const dx = INICIO.x - x, dz = INICIO.z - z, len = Math.hypot(dx, dz) || 1;
         const sx = x + dx / len * 0.7, sz = z + dz / len * 0.7, sy = y + 2.2;
-        t.position.set(sx, sy, sz);
-        t.lookAt(INICIO.x, sy, INICIO.z); // de frente al arranque, por encima del aviso de Acción
+        t.position.set(sx, sy + 0.45, sz); // más alto: la flecha de guía ya no tapa el rótulo
+        t.lookAt(INICIO.x, sy + 0.45, INICIO.z); // de frente al arranque, por encima del aviso de Acción
         G.renderer.scene.add(t);
         const posteL = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 2.05, 6), new THREE.MeshLambertMaterial({ color: '#6b4a2a' }));
         posteL.position.set(sx, y + 1.02, sz); G.renderer.scene.add(posteL);
-        pieza(new THREE.BoxGeometry(0.9, 0.08, 0.7), '#8f7a3e', x + 1.1, y + 0.05, z + 1).rotation.y = 0.9; // un trozo de techo ya caído
+        const tabla = pieza(new THREE.BoxGeometry(0.9, 0.08, 0.7), '#8f7a3e', x + 1.1, y + 0.08, z + 1); tabla.rotation.y = 0.9; // un trozo de techo ya caído
+        const yTabla = tabla.position.y;
+        G.on('update', () => { const t = (G.S && G.S.clock) || 0; tabla.position.y = yTabla + Math.sin(t * 1.4) * 0.03; tabla.rotation.z = Math.sin(t * 0.9) * 0.08; }, 74);
         G.fisica.colliders.push({ x, z, r: 1, h: 1.4, kind: 'obj' });
         G.on('aula', (k) => { if (k === 'idioma') pintar(); });
         G.on('apply', pintar, 76);
         if (document.fonts && document.fonts.ready) document.fonts.ready.then(pintar);
-        if (G.idioma && G.idioma.poner) {
-          const poner = G.idioma.poner;
-          G.idioma.poner = function (l) { const r = poner.apply(this, arguments); Promise.resolve(r).then(pintar); return r; };
-        }
       }
       // La rama del papá: un tronco seco con una rama larga, donde se va volando al ver el plano
       { const { x, z } = RAMA, y = H(x, z);
