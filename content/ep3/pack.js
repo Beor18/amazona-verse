@@ -314,15 +314,57 @@
           dx = p.x - G.S.pos.x; dz = p.z - G.S.pos.z; n = Math.hypot(dx, dz) || 1;
         }
         if (G.S.facing) { G.S.facing.x = dx / n; G.S.facing.z = dz / n; }
-        G.camara.yaw = Math.atan2(-dx, -dz) - 0.35;
+        // Ciclo 6 · 390: −0,35 lo saca del cuadro (a la izquierda o bajo los botones de la derecha).
+        const estrecho = window.innerWidth <= 560 && window.innerHeight > window.innerWidth;
+        G.camara.yaw = Math.atan2(-dx, -dz) - (estrecho ? 0.06 : 0.35);
         try { G.camara.manual(); G.camara.place(true); } catch (e) { /* sin cámara */ }
+        if (!estrecho || !G.renderer || !G.renderer.camera || !window.THREE) return;
+        const sp = G.actores && G.actores.npc && G.actores.npc('papa') && G.actores.npc('papa').sp;
+        if (!sp) return;
+        const v = new window.THREE.Vector3();
+        for (let k = 0; k < 8; k++) {
+          sp.getWorldPosition(v);
+          v.project(G.renderer.camera);
+          const x = (v.x * 0.5 + 0.5) * window.innerWidth;
+          if (x > 118 && x < 230) break;
+          G.camara.yaw += x < 118 ? 0.07 : -0.07;
+          try { G.camara.place(true); } catch (e) { break; }
+        }
       };
+      if (!document.getElementById('ep3-ciclo6')) {
+        const st = document.createElement('style'); st.id = 'ep3-ciclo6';
+        // A 390 la columna de Diario y Pausa nacía a la altura de la cabeza y cortaba por la derecha.
+        // El objetivo en inglés llega hasta la flecha: un poco de aire y «floats» no se mete debajo.
+        st.textContent = '@media (max-width:560px){'
+          + 'body.av-ep3:has(#dialog:not([hidden])) #sys{top:calc(env(safe-area-inset-top, 0px) + 188px)}'
+          + 'body.av-ep3 #steps li.now{padding-right:10px}'
+          + '}';
+        document.head.appendChild(st);
+      }
+      document.body.classList.add('av-ep3');
       mirar(PAPA); // el papá y el astillero quedaban fuera del encuadre
       if (!G.quiet && !G.c._ciclo4Papa) {
         G.c._ciclo4Papa = true;
         const y = G.terreno ? G.terreno.height(PAPA.x, PAPA.z) : 0;
         try { if (G.fx && G.fx.burst) G.fx.burst(PAPA.x, y + 1.4, PAPA.z, 'stars', 8); } catch (e) { /* sin efectos */ }
         try { if (G.audio && G.audio.has && G.audio.has('aviso')) G.audio.play('aviso'); } catch (e) { /* sin audio */ }
+      }
+      // Ciclo 6 · el papá saluda con un saltito (las estrellas del aviso se quedan).
+      const quieto = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+      if (!G.quiet && !quieto && !G.c._ciclo6Papa) {
+        G.c._ciclo6Papa = true;
+        const t0 = performance.now();
+        let baseY = null, suelto = false;
+        try { if (G.audio && G.audio.play) G.audio.play('aleteo'); } catch (e) { /* sin audio */ }
+        G.on('render', () => {
+          if (suelto) return;
+          const n = G.actores && G.actores.npc && G.actores.npc('papa');
+          if (!n || !n.sp) return;
+          if (baseY == null) baseY = n.sp.position.y;
+          const k = (performance.now() - t0) / 1000;
+          if (k > 1.35) { n.sp.position.y = baseY; suelto = true; return; }
+          n.sp.position.y = baseY + Math.abs(Math.sin(k * 8)) * 0.22;
+        }, 20);
       }
       G.dialogo.say(G.dialogo.L('inicio:ep3').concat(continuidad()), () => { mirar(PAPA); G.ui.toast('Baja al astillero y habla con el papá', 3000); });
     },
