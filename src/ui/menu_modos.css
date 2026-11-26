@@ -76,17 +76,21 @@
   #title:has(#modos) .title-hint { display: none; }
 }
 @media (max-height: 520px) and (orientation: landscape) {
-  #title:has(#modos) .logo svg { width: min(220px, 28vw); }
-  #title:has(#modos) .title-main { gap: 4px; padding-top: 6px; padding-bottom: 28px; }
-  #title:has(#modos) .title-sub { margin: 0; font-size: 14px; }
-  #title:has(#modos) .title-hero { width: 18vh; opacity: 0.35; pointer-events: none; }
-  .modos-t { margin: 0 0 4px; font-size: 18px; }
-  .modos-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-  .modo { min-height: 84px; padding: 6px 4px; }
-  .modo .modo-img { width: 28px; height: 28px; }
-  /* La primera fila cabe; el degradado dice que abajo hay más juegos */
-  #title:has(#modos) .title-main { -webkit-mask-image: linear-gradient(#000 0 86%, transparent); mask-image: linear-gradient(#000 0 86%, transparent); }
-  #title:has(#modos)::after { content: "↓"; position: absolute; left: 0; right: 0; bottom: 2px; z-index: 4; text-align: center; color: #ffd27a; font: 800 22px/1 system-ui, sans-serif; pointer-events: none; text-shadow: 0 2px 0 #3b2a14; animation: bob 1.2s ease-in-out infinite; }
+  #title:has(#modos) .logo svg { width: min(120px, 16vw); }
+  #title:has(#modos) .title-main { gap: 2px; padding-top: 2px; padding-bottom: 4px; }
+  #title:has(#modos) .title-sub { margin: 0; font-size: 13px; }
+  #title:has(#modos) .title-foot { display: none; }
+  #title:has(#modos) .title-hero { width: 16vh; opacity: 0.28; pointer-events: none; }
+  .title-episodios .btn { min-height: 44px; padding-top: 4px; padding-bottom: 4px; }
+  .modos-t { margin: 0 0 2px; font-size: 16px; }
+  .modos-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 6px; }
+  .modo { min-height: 64px; padding: 2px 4px; }
+  .modo.es-ultimo { padding-top: 4px; }
+  .modo b { font-size: 14px; }
+  .modo small { font-size: 12px; line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .modo .modo-img { width: 18px; height: 18px; }
+  #title:has(#modos) .title-main { -webkit-mask-image: none; mask-image: none; }
+  #title:has(#modos)::after { content: "↓"; position: absolute; left: 0; right: 0; bottom: 0; z-index: 4; text-align: center; color: #ffd27a; font: 800 16px/1 system-ui, sans-serif; pointer-events: none; text-shadow: 0 2px 0 #3b2a14; animation: bob 1.2s ease-in-out infinite; }
 }
 /* Capítulos (AV1): botón bajo las tarjetas que abre la pantalla «Capítulos» (#capitulos) */
 .title-episodios { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2); margin: var(--sp-2) 0 0; }
