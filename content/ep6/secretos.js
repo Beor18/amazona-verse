@@ -34,7 +34,7 @@
     {
       id: 'ep6_mesa', tipo: 'seguir',
       nombre: { es: 'El mapa en la mesa', en: 'The map on the table' },
-      punto: Object.assign(EN({ x: -6, z: 4.5 }, { x: 45, z: -60 }), { r: 3 }),
+      punto: Object.assign(EN({ x: -6, z: 4.5 }, { x: 51, z: -55 }), { r: 3 }),
       premio: { vineta: 'sec_ep6_mesa', evento: 'SecretoEp6Mesa' },
       leyenda: { es: 'En la mesa del taller los pedazos se miran juntos. Sin ellos, el capítulo se termina igual.', en: 'On the workshop table the pieces sit together. Without them, the chapter still ends.' },
     },
