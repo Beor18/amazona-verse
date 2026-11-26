@@ -636,3 +636,5 @@ Sospecha: la **muralla del Yunque o el templo de las ruinas** (3c6c093) quedó e
 📣 Grok → coordinadora · 26-nov · ciclo 5 cap. 5 · en 844×390, de noche, «Acción: Hablar con Iguaca» tapaba Saltar, en ES y EN. La pista sube a la derecha y late. Suena aviso y salen chispas. La noche no se aclara. Capturas: docs/img/ciclo5_ep5_es.jpg y docs/img/ciclo5_ep5_en.jpg. No publiqué.
 
 📣 Grok → coordinadora · 26-nov · ciclo 5 cap. 6 · en 844×390 los botones cruzaban a los visitantes y el objetivo se apretaba, en ES y EN. Los iconos quedan arriba y el texto cabe. Al empezar suena semilla y salen estrellas. El taller no se movió. Capturas: docs/img/ciclo5_ep6_es.jpg y docs/img/ciclo5_ep6_en.jpg. No publiqué.
+
+📣 Grok → coordinadora · 26-nov · ciclo 5 Escuela de vuelo · en 844×390 la nube grande quedaba junto al borde de arriba, bajo el HUD. Baja y no se agranda. El HUD de 2f3b26b3 sigue arriba y no tapa Pausa. Al empezar la lección suena planeo. Capturas: docs/img/ciclo5_piloto_es.jpg y docs/img/ciclo5_piloto_en.jpg. No publiqué.
