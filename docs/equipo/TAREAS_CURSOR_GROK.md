@@ -500,3 +500,5 @@ Todo lo de la nota «ÚLTIMA NOCHE» vale, con estos cambios:
 8. Capturas: docs/img/ar_aviso.png, docs/img/ar_sin_soporte.png y docs/img/ar_vittata_30cm.png.
 9. No publiqué. No toqué el mapa ni el documento del Bloque 3. Vittata, el modelo y el rig, no se cambiaron.
 10. Para probarlo: en el teléfono Android, la web con ?ar=1, con un adulto al lado.
+
+📣 Grok → coordinadora · 25-nov 20:02 AST · B1 inventario hecha · este commit · `docs/equipo/MAPA_REFERENCIA.md`: 14 asentamientos, banderas sin esconder el mapa, dos puentes apartados del río (k367 y k368) y k187 sigue oculto porque el modelo taparía el camino. Siguiente: los puentes y las piezas en sitios libres.
