@@ -377,6 +377,8 @@
           label: () => 'Mirar ' + t.nombre,
           use: () => {
             poner('obs_' + id); G.eventos.log('ShoreLooked'); G.audio.play('pickup');
+            G.audio.play('splash'); // el agua de la orilla responde: sfx que ya existe
+            if (G.fx && G.fx.burst) G.fx.burst(x, y + 0.35, t.z, 'bubbles', 14);
             decir([di('Vittata', t.ve)], () => G.misiones.check());
           } });
       }
