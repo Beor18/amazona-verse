@@ -332,4 +332,28 @@
       return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
     };
   }
+
+  // Ciclo 5 · 844×390. Un detalle de juego por capítulo, solo en horizontal bajo. En 1280×800 no entra.
+  const cortoH = () => !!(window.matchMedia && matchMedia('(max-height: 520px) and (orientation: landscape)').matches);
+  let intentos = 0;
+  const relojH = setInterval(() => {
+    const G = window.AV && window.AV.G;
+    if (!G || !G.pack || !G.S || !G.S.profile || !G.S.profile.created) { if (++intentos > 90) clearInterval(relojH); return; }
+    clearInterval(relojH);
+    if (!cortoH() || G.quiet || G._ciclo5Hecho) return;
+    G._ciclo5Hecho = true;
+    const id = G.pack.id;
+    const burst = (tipo, sfx) => {
+      try { if (G.fx && G.fx.burst) G.fx.burst(G.S.pos.x, G.S.pos.y + 1, G.S.pos.z, tipo, 8); } catch (e) { /* sin efectos */ }
+      try { if (sfx && G.audio) G.audio.play(sfx); } catch (e) { /* sin audio */ }
+    };
+    if (id === 'ep2') burst('gold', 'semilla');
+    else if (id === 'ep3') burst('stars', 'aviso');
+    else if (id === 'ep4') burst('feathers', 'flecha');
+    else if (id === 'ep5') {
+      burst('gold', 'aviso');
+      const p = document.getElementById('prompt');
+      if (p) { p.classList.add('ciclo5-pulso'); setTimeout(() => p.classList.remove('ciclo5-pulso'), 2800); }
+    } else if (id === 'ep6') burst('stars', 'semilla');
+  }, 400);
 })();
