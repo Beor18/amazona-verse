@@ -273,7 +273,7 @@ window.AVPlaneo = function (G) {
     E.alto = S.pos.y - sup;
     E.dist = Math.hypot(S.pos.x - salida.x, S.pos.z - salida.z); if (E.dist > E.lejos) E.lejos = E.dist;
     if (E.lejos >= (E.centena + 1) * 100) { E.centena = Math.floor(E.lejos / 100); if (!enTerm && E.subeT <= 0) aviso(L(`¡${E.centena * 100} m!`, `${E.centena * 100} m!`), 'oro'); sonar('boton'); }
-    if (E.alto < CERCA_SUELO && !E.cerca) { E.cerca = true; sonar('aviso'); aviso(L('¡El suelo! Busca una nube', 'The ground! Find a cloud'), 'malo'); }
+    if (E.alto < CERCA_SUELO && !E.cerca) { E.cerca = true; sonar('aviso'); aviso(L('¡Cuidado, el suelo! Busca una nube o una corriente', 'Watch the ground! Find a cloud or an updraft'), 'malo'); }
     else if (E.alto > LEJOS_SUELO) E.cerca = false;
     const r = restante();
     if (E.avisos === 0 && r <= 10) { E.avisos = 1; sonar('aviso'); }
