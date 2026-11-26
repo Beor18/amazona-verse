@@ -88,6 +88,15 @@
 .title-idioma { display: inline-flex; gap: var(--sp-1); align-items: center; }
 .title-idioma .chip { min-width: 44px; min-height: 44px; justify-content: center; padding: 0 var(--sp-3); }
 .title-episodios .btn { min-height: 44px; }
+/* 390×844, EN: «What is there to do?» ensanchaba el botón y el borde de la portada lo cortaba */
+@media (max-width: 420px) {
+  #title .title-episodios.episodios-arriba { width: 100%; }
+  #title .title-episodios .btn {
+    flex: 1 1 0; min-width: 0; max-width: 100%; white-space: normal; line-height: 1.15;
+    padding-left: 10px; padding-right: 10px;
+  }
+  #title .title-idioma { flex: 1 0 100%; justify-content: center; }
+}
 /* Pantalla «Capítulos»: los 6 de la temporada con portada (SVG y color del capítulo), estado y Jugar; cabe en 320 px y se desplaza */
 dialog.capitulos {
   box-sizing: border-box; width: min(640px, calc(100vw - 2 * var(--sp-3))); max-height: calc(100dvh - 2 * var(--sp-3));
