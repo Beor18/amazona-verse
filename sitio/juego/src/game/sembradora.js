@@ -473,6 +473,7 @@ window.AVSembradora = function (G) {
     if (E.avisos === 0 && r <= 10) { E.avisos = 1; sonar('aviso'); }
     if (E.avisos === 1 && r <= 5) { E.avisos = 2; sonar('aviso'); }
     predecir(P);
+    document.body.classList.toggle('sembradora-centro', E.fase === 'juego' && P.zona === 2 && P.alto >= ALTO_MIN && E.semillas > 0);
     pintar();
     if (r <= 0) { fin(); return; }
     if (hudEl && Math.floor((E.t - dt) * 4) !== Math.floor(E.t * 4)) pintarHud();
@@ -556,13 +557,14 @@ window.AVSembradora = function (G) {
       '#sdc-fin .sdc-dato{font-size:14px;font-weight:500;line-height:1.3;padding:6px 10px;border-radius:12px;background:rgba(255,248,230,.1)}#sdc-fin .sdc-dato:empty{display:none}#sdc-fin .sdc-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}' +
       // el aviso va bajo la fila de botones de arriba (Diario, Gestos, Nido…: hasta ~130 px); en el teléfono de pie esa fila va al lado, así que sube
       '@media (max-width:600px){#sdc-hud [data-k="msg"]{top:calc(100% + 8px)}}' +
-      '@media (max-width:420px){#sdc-hud [data-k="msg"]{max-width:calc(100vw - 40px);font-size:14px;line-height:1.3}#sdc-fin .sdc-bots{flex-direction:column;align-items:stretch;width:100%}#sdc-fin .sdc-bots button{width:100%}}' +
-      '@keyframes sdc-pop{0%{transform:scale(1)}40%{transform:scale(1.45)}100%{transform:scale(1)}}#sdc-hud [data-k="a"].sdc-pop{display:inline-block;animation:sdc-pop .45s ease-out}@media (prefers-reduced-motion:reduce){#sdc-hud [data-k="a"].sdc-pop{animation:none}}' +
+      '@media (max-width:420px){#sdc-hud [data-k="msg"]{position:fixed;left:16px;right:16px;top:78px;width:auto;max-width:none;transform:none;font-size:15px;line-height:1.3}#sdc-fin .sdc-bots{flex-direction:column;align-items:stretch;width:100%}#sdc-fin .sdc-bots button{width:100%}}' +
+      '@keyframes sdc-pop{0%{transform:scale(1)}40%{transform:scale(1.45)}100%{transform:scale(1)}}#sdc-hud [data-k="a"].sdc-pop{display:inline-block;animation:sdc-pop .45s ease-out}@media (prefers-reduced-motion:reduce){#sdc-hud [data-k="a"].sdc-pop,body.sembradora-centro #b-act{animation:none}}' +
       // teléfono de lado: el aviso va abajo, entre el joystick y los botones (arriba tapaba Diario y Gestos)
       '@media (orientation:landscape) and (max-height:500px){#sdc-hud [data-k="msg"]{position:fixed;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);max-width:min(440px,calc(100vw - 380px))}}' +
       '@media (orientation:landscape) and (max-height:500px){#sdc-fin{padding:12px 16px;gap:4px}#sdc-fin h2{font-size:21px}#sdc-fin .sdc-gran{font-size:34px}#sdc-fin .sdc-gran svg{width:34px;height:34px}#sdc-fin .sdc-dato{font-size:13px;padding:4px 8px}}' +
       // la historia no se mezcla con el minijuego (sus avisos esperan: G.menuModos.ocupado() cuenta este juego como actividad en marcha)
-      'body.sembradora-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela,#b-diary,#b-emotes,#b-fly){visibility:hidden!important}' +
+      'body.sembradora-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela,#b-diary,#b-emotes,#b-fly,#b-dash){visibility:hidden!important}' +
+      'body.sembradora-centro #b-act{box-shadow:0 0 0 4px #ffd27a,0 4px 0 rgba(0,0,0,.25);animation:sdc-pop .7s ease-in-out infinite}' +
       // con la vista final y el panel, tampoco las pistas de vuelo ni el minimapa: solo el claro y el resultado
       'body.sembradora-fin :is(#minimapa,#guia-hud,#keyhint,#acts,#stick,#emotes,#tag,#sys,#sys button,#b-diary,#b-emotes,#b-nido,#b-menu,#v18-exp-poder){visibility:hidden!important}' +
       // el botón Acción lleva el icono de una semilla mientras dice «Soltar»
@@ -686,7 +688,7 @@ window.AVSembradora = function (G) {
     if (G.interaccion && G.interaccion.modo === MODO) G.interaccion.modo = modo0; modo0 = null;
     camara(0); soltarMallas();
     if (hudEl) { hudEl.hidden = true; finEl.hidden = true; [hudEl, finEl].forEach(el => el.querySelectorAll('[data-k]').forEach(x => { if (x.dataset.k !== 's' && x.dataset.k !== 'aw') x.textContent = ''; })); [hudEl, finEl].forEach(el => el.querySelectorAll('button').forEach(b => { b.textContent = ''; })); q(hudEl, 'a').textContent = ''; } // sin texto viejo (ni en otro idioma)
-    document.body.classList.remove('sembradora-on', 'sembradora-fin');
+    document.body.classList.remove('sembradora-on', 'sembradora-fin', 'sembradora-centro');
     // el chip táctil del poder (explorar.js) estaba tapado por la clase; si se vuelve a la portada, explorar.js no corre y se quedaba encima: se oculta y explorar.js lo vuelve a enseñar cuando toque
     const poder = document.getElementById('v18-exp-poder'); if (poder) poder.hidden = true;
     try { if (G.pausa && G.pausa.set) G.pausa.set('sembradora', false); } catch (e) { /* sin pausa */ }

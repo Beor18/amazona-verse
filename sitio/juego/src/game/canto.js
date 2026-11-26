@@ -45,8 +45,8 @@ window.AVCanto = function (G) {
     st.textContent = '#canto{position:fixed;inset:0;z-index:80;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,rgba(16,48,32,.94),rgba(8,20,14,.98));font-family:Fredoka,system-ui,sans-serif;color:#fff8ea;padding:16px;box-sizing:border-box}' +
       '#canto[hidden]{display:none}#canto .c-caja{width:min(440px,100%);display:flex;flex-direction:column;align-items:center;gap:14px}' +
       '#canto h2{margin:0;font-size:26px;text-shadow:0 2px 6px #0008}#canto .c-info{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-weight:600;font-size:16px}' +
-      '#canto .c-info span{background:rgba(255,255,255,.14);border-radius:999px;padding:4px 12px}#canto .c-msg{min-height:1.4em;margin:0;font-size:17px;font-weight:600;text-align:center;max-width:100%}#canto.c-turno .c-msg{animation:c-respira 1.2s ease-in-out infinite}' +
-      '#canto .c-notas{display:flex;gap:8px;min-height:16px;justify-content:center;align-items:center}#canto .c-notas[hidden]{display:none}#canto .c-notas i{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.22);box-shadow:inset 0 0 0 2px rgba(255,255,255,.75)}#canto .c-notas i.va{background:#ffd27a;transform:scale(1.3)}#canto .c-notas i.hecha{background:#9df0a2}' +
+      '#canto .c-info span{background:rgba(255,255,255,.14);border-radius:999px;padding:4px 12px}#canto .c-msg{min-height:1.4em;margin:0;font-size:17px;font-weight:600;text-align:center;max-width:100%}#canto.c-turno .c-msg{animation:c-respira 1.2s ease-in-out infinite;background:#ffd27a;color:#2b1a05;border-radius:999px;padding:6px 14px}' +
+      '#canto .c-notas{display:flex;gap:8px;min-height:22px;justify-content:center;align-items:center;flex-wrap:wrap;max-width:100%}#canto .c-notas[hidden]{display:none}#canto .c-notas i{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.22);box-shadow:inset 0 0 0 2px rgba(255,255,255,.75)}#canto .c-notas i.va{background:var(--nota,#ffd27a);transform:scale(1.25)}#canto .c-notas i.hecha{background:var(--nota,#9df0a2)}' +
       '#canto .c-aves{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;width:100%}' +
       '#canto .c-ave{all:unset;box-sizing:border-box;aspect-ratio:1;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;background:var(--c);border:4px solid rgba(255,255,255,.35);box-shadow:0 6px 0 rgba(0,0,0,.25),0 8px 18px rgba(0,0,0,.35);transition:transform .08s,filter .08s;touch-action:manipulation;color:#fff;font-weight:700;font-size:18px;text-shadow:0 1px 3px #0009}' +
       '#canto .c-ave img{width:62%;height:auto;border-radius:50%;background:rgba(255,255,255,.22);box-shadow:inset 0 0 0 3px rgba(255,255,255,.35);pointer-events:none}#canto .c-ave:focus-visible{outline:4px solid #ffd27a;outline-offset:3px}' +
@@ -60,7 +60,8 @@ window.AVCanto = function (G) {
       // T51: en horizontal (teléfono tumbado) las cuatro en una fila, del tamaño que deja el alto; «Salir» siempre a la vista
       '@media (orientation:landscape) and (max-height:560px){#canto .c-caja{width:min(900px,100%);gap:8px}#canto h2{font-size:21px}#canto .c-msg{min-height:1.2em;margin:0}' +
       '#canto .c-aves{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:min(100%,calc((100dvh - 170px) * 4 + 30px))}#canto .c-ave{border-radius:20px;font-size:15px}#canto .c-bots button{min-height:44px}}' +
-      '@media (prefers-reduced-motion:reduce){#canto .c-ave{transition:none}#canto .c-ave.luz{transform:none}#canto.c-turno .c-msg{animation:none}#canto .c-notas i.va{transform:none}}' +
+      '@media (prefers-reduced-motion:reduce){#canto .c-ave{transition:none}#canto .c-ave.luz{transform:none}#canto.c-turno .c-msg,#canto.c-bien .c-ave{animation:none}#canto .c-notas i.va{transform:none}}' +
+      '#canto.c-bien .c-ave{animation:c-respira .4s ease-in-out 2}' +
       // PULIR 4 (revisión): título 26 px (21 en horizontal bajo) y mensaje 17 px como el panel común; al terminar, número grande, botones de 54 px y sin las cuatro aves debajo
       '#canto .c-caja:focus{outline:none}#canto.c-fin .c-aves{display:none}#canto.c-fin .c-bots button{min-height:54px}';
     document.head.appendChild(st);
@@ -104,7 +105,11 @@ window.AVCanto = function (G) {
     const box = el && el.querySelector('[data-k="notas"]'); if (!box) return;
     const n = E.sec.length, fin = E.fase === 'fin';
     box.hidden = fin || !n;
-    box.innerHTML = fin ? '' : Array.from({ length: n }, (_, i) => `<i class="${E.fase === 'turno' && i < E.pos ? 'hecha' : ''}${i === va ? ' va' : ''}"></i>`).join('');
+    box.innerHTML = fin ? '' : Array.from({ length: n }, (_, i) => {
+      const hecha = E.fase === 'turno' && i < E.pos, ahora = i === va;
+      const col = (hecha || ahora) && AVES[E.sec[i]] ? AVES[E.sec[i]].col : '';
+      return `<i class="${hecha ? 'hecha' : ''}${ahora ? ' va' : ''}"${col ? ' style="--nota:' + col + '"' : ''}></i>`;
+    }).join('');
   }
   function luz(i, ms, k) {
     const b = el && el.querySelector(`.c-ave[data-i="${i}"]`); if (!b) return;
@@ -114,20 +119,30 @@ window.AVCanto = function (G) {
 
   // ---------- Juego ----------
   function cantar() {
-    E.fase = 'escucha'; E.pos = 0; pintar(L('Escucha y luego toca las mismas', 'Listen, then tap the same ones'));
+    E.fase = 'escucha'; E.pos = 0; pintar(L('Escucha y luego toca las mismas cotorras', 'Listen, then tap the same parrots'));
     const paso = Math.max(330, 620 - E.ronda * 18); // un poco más rápido cada ronda, sin pasarse
     E.sec.forEach((i, k) => espera(500 + k * paso, () => luz(i, paso * 0.65, k)));
-    espera(500 + E.sec.length * paso, () => { if (E.fase !== 'escucha') return; E.fase = 'turno'; pintar(L('¡Tu turno! Toca las mismas', 'Your turn! Tap the same ones')); });
+    espera(500 + E.sec.length * paso, () => { if (E.fase !== 'escucha') return; E.fase = 'turno'; pintar(L('¡Tu turno! Toca las mismas cotorras', 'Your turn! Tap the same parrots')); });
   }
   function ronda() { E.ronda++; E.sec.push(sig()); pintar(); cantar(); }
   function nueva() { limpiar(); E.sec = []; E.ronda = 0; E.nuevo = false; ronda(); }
   function pulsar(i) {
+    if (E.fase === 'escucha') { // tocar mientras cantan no avanza: si no, parece roto
+      const m = q('msg');
+      if (m && !m.dataset.espera) {
+        m.dataset.espera = '1';
+        m.textContent = L('Primero escucha', 'Listen first');
+        espera(700, () => { if (E.fase === 'escucha' && m.dataset.espera) { m.textContent = L('Escucha y luego toca las mismas cotorras', 'Listen, then tap the same parrots'); delete m.dataset.espera; } });
+      }
+      return false;
+    }
     if (E.fase !== 'turno' || !(i >= 0 && i < 4)) return false;
     luz(i, 220);
     if (i !== E.sec[E.pos]) { fin(); return false; }
     E.pos++; notas();
     if (E.pos >= E.sec.length) {
-      E.fase = 'escucha'; sonar('ring'); pintar(L('¡Bien!', 'Nice!'));
+      E.fase = 'escucha'; sonar('ring'); sonar('nido_chispa'); pintar(L('¡Bien!', 'Nice!'));
+      if (el) { el.classList.add('c-bien'); espera(400, () => { if (el) el.classList.remove('c-bien'); }); }
       espera(650, ronda);
     }
     return true;
@@ -162,7 +177,10 @@ window.AVCanto = function (G) {
     montar(); el.hidden = false; document.body.classList.add('canto-on');
     try { if (G.pausa && G.pausa.set) G.pausa.set('canto', true); } catch (e) { /* sin pausa */ }
     nueva();
-    const b0 = el.querySelector('.c-ave'); if (b0) setTimeout(() => { try { b0.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0);
+    // En el teléfono el anillo de foco sobre la primera cotorra parece «toca esta». El foco va al panel.
+    const tactil = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+    const foco = tactil ? el.querySelector('.c-caja') : el.querySelector('.c-ave');
+    if (foco) setTimeout(() => { try { foco.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0);
     return true;
   }
   function salir() {

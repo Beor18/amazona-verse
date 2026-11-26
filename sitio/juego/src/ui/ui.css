@@ -711,7 +711,12 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   /* T6: el objetivo en 2 líneas como mucho (antes 1 línea cortada con «…») */
   #steps li.now { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 15px; line-height: 1.25; white-space: normal; overflow: hidden; }
   /* T6: los contadores juntos: el inventario va pegado al reloj del marcador (ui.js pone --mc-w con su ancho) */
-  #top:has(#marcador:not([hidden])) #inv { margin-left: calc(var(--mc-w, 0px) + 4px); margin-right: auto; }
+  /* A 390 el objetivo son 2 líneas: los recursos compartían la fila y tapaban «está en lo alto». Van debajo. */
+  #quest { flex: 1 1 100%; }
+  #top #inv, #top:has(#marcador:not([hidden])) #inv { margin-left: 0; margin-right: auto; margin-top: 6px; }
+  #pista-vuela { display: inline-block; margin: 6px 0 0; padding: 2px 8px; border-radius: var(--r-pill); background: rgba(242, 160, 61, 0.22); position: relative; z-index: 1; }
+  /* El aviso de la copa (cap. 1) baja bajo el objetivo; el de siempre se queda en 118 px. */
+  body.av-aviso-copa #toast { top: calc(env(safe-area-inset-top, 0px) + 196px); }
   #steps li.now::after { display: none; }
   #quest.abierto { padding-bottom: var(--sp-3); }
   #quest.abierto #steps { margin-top: 6px; } /* la barra no queda pegada al capítulo (UI v21 P3) */

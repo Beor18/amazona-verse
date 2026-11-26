@@ -102,7 +102,15 @@
         // Aviso corto (2 líneas en 390×844): el de antes tapaba la cara de Vittata hasta llegar a la copa.
         const llama = '¡Iguaca te llama desde ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán') + '! Despega y pósate a su lado.';
         G.ui.toast(llama, 3200, { fijo: true }); // de una sola vez: la cola llena no lo tira
+        if (document.body) { document.body.classList.add('av-aviso-copa'); setTimeout(() => document.body.classList.remove('av-aviso-copa'), 3400); }
         const per = G.c.luma && G.c.luma.percha;
+        // La copa responde al aviso: unas estrellas y nido_chispa (sfx que ya está). No es el aleteo del despegue.
+        if (!G.quiet && per && !G.c._ciclo4Copa) {
+          G.c._ciclo4Copa = true;
+          const y = per.y != null ? per.y : (G.terreno ? G.terreno.height(per.x, per.z) : 0);
+          try { if (G.fx && G.fx.burst) G.fx.burst(per.x, y + 1.1, per.z, 'stars', 12); } catch (e) { /* sin efectos */ }
+          try { if (G.audio && G.audio.has && G.audio.has('nido_chispa')) G.audio.play('nido_chispa'); } catch (e) { /* sin audio */ }
+        }
         if (!G.quiet && per && G.camara && G.S) {
           const dx = per.x - G.S.pos.x, dz = per.z - G.S.pos.z, n = Math.hypot(dx, dz) || 1;
           if (G.S.facing) { G.S.facing.x = dx / n; G.S.facing.z = dz / n; }
@@ -113,7 +121,7 @@
         // (tres veces más tras hablar con Iguaca, y tapaba las instrucciones de En familia). En cuanto el paso «luma» queda atrás
         // (o la partida cargada ya lo tiene), se quita de la pantalla y de la cola.
         avisoInicio = llama;
-        if (G.ui.quitarAviso) { const vigiaAviso = () => { if (G.S.step >= 1) { G.ui.quitarAviso(llama); G.off('update', vigiaAviso); } }; G.on('update', vigiaAviso, 83); }
+        if (G.ui.quitarAviso) { const vigiaAviso = () => { if (G.S.step >= 1) { G.ui.quitarAviso(llama); if (document.body) document.body.classList.remove('av-aviso-copa'); G.off('update', vigiaAviso); } }; G.on('update', vigiaAviso, 83); }
         // El primer despegue suena a aleteo (sfx de Suno que ya está) y suelta unas plumas. Solo antes de llegar a Iguaca.
         if (!G.c._ciclo3Vuelo) {
           G.c._ciclo3Vuelo = true;
