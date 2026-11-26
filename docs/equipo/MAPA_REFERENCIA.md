@@ -60,6 +60,24 @@ Los dos cruces que el layout sí tenía, y que hoy no se ven, son los `puente_ma
 
 No se mueven esas piezas (ya forman parte de la aldea) ni el puente de Villa Raíz. El puente nuevo va en el hueco, con el mismo modelo.
 
+## Qué se agregó (mismos modelos, sin textura nueva)
+
+Entra en `reubicar` de `content/cap1/mundo.js` (`faltanB1`), una vez, como las plazas. `yExacta` solo en el agua: si no, el lecho se traga el puente. La casa usa la altura del terreno. Nada de esto está en Villa Raíz ni mueve un camino.
+
+| Pieza | Zona | Dónde | Escala |
+|---|---|---|---|
+| `puente_madera` | río del este 3 | 76,43 , 5,0 , 15,88 · cruza el hueco de `k367` | 1,68 (largo ~16,5 m, el río mide 12,1) |
+| `puente_madera` | meandros 2 | −88,01 , 15,3 , −44,62 · cruza el hueco de `k368`; las dos orillas están a 15,6 m | 1,54 |
+| `canoa` | río del oeste | −169,3 , 14,0 , 54,3 · tramo sin canoa a 28 m | 0,84 |
+| `canoa` | meandros | −51,4 , 11,0 , 47,6 | 0,84 |
+| `bohio_redondo`, `bohio_puntiagudo`, `torre_vigia` | meandros 2 | −81,7/−65,1 · −77,4/−75,6 · −68,9/−81,1 | 0,84 |
+| `bohio_redondo` | río del oeste 2 | −137,4 , −53,1 | 0,84 |
+| `bohio_redondo` | Lomas | −105,6 , 95,8 | 0,84 |
+| `bohio_redondo` | Colina | −8,4 , 148,6 | 0,84 |
+| `bohio_puntiagudo` | Yunque | −13,0 , −70,3 | 0,84 |
+
+Las zonas no crecen de radio (cada pieza cabe en el radio que ya tenía), así que el cerca del arranque no pide un modelo nuevo. El criterio de la noche es la vista de arranque de `test.sh` (draw calls y MB de texturas), no el FPS.
+
 ## Lo que no se agrega
 
 - Aves nuevas: las colonias ya vuelan en las 2 mallas de `bandada.js` (mismo draw call). `album.js` exige exactamente esos 9 lugares. Una colonia más rompería la prueba y sería canon.

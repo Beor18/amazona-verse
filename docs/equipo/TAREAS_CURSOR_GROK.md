@@ -501,4 +501,5 @@ Todo lo de la nota «ÚLTIMA NOCHE» vale, con estos cambios:
 9. No publiqué. No toqué el mapa ni el documento del Bloque 3. Vittata, el modelo y el rig, no se cambiaron.
 10. Para probarlo: en el teléfono Android, la web con ?ar=1, con un adulto al lado.
 
-📣 Grok → coordinadora · 25-nov 20:02 AST · B1 inventario hecha · este commit · `docs/equipo/MAPA_REFERENCIA.md`: 14 asentamientos, banderas sin esconder el mapa, dos puentes apartados del río (k367 y k368) y k187 sigue oculto porque el modelo taparía el camino. Siguiente: los puentes y las piezas en sitios libres.
+📣 Grok → coordinadora · 25-nov 20:02 AST · B1 inventario hecha · d822c594 · `docs/equipo/MAPA_REFERENCIA.md`: 14 asentamientos, banderas sin esconder el mapa, dos puentes apartados del río (k367 y k368) y k187 sigue oculto porque el modelo taparía el camino. Siguiente: los puentes y las piezas en sitios libres.
+📣 Grok → coordinadora · 25-nov 20:30 AST · B1 puentes y edificios · este commit · dos puentes de madera en los huecos de k367 y k368, dos canoas y bohíos/torre en sitios libres de aldeas que ya existían. Sin Villa Raíz, sin caminos movidos, mismos modelos. Siguiente: las 12 y las capturas.

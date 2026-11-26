@@ -124,6 +124,26 @@
       EK.plazasAY2 = true;
       for (const P of PLAZAS) for (const [modelo, x, y, z, rotY] of P.props) EK.compacto.push({ grupo: P.id, modelo, inst: [[x, y, z, rotY, 0.8366]], orientar: false, yExacta: false, escalaPack: false });
     }
+    // B1 (25-nov): lo que la referencia pide y el layout no pinta. Mismos modelos y las mismas texturas
+    // (otra instancia del lote, no un material nuevo). No se mueve ninguna pieza ni el puente de Villa Raíz.
+    // Los dos puentes van en el hueco que dejó el ajuste de k367 y k368 (nacieron sobre el río y quedaron en seco).
+    // yExacta: el lecho hundiría el puente; la Y es la orilla baja para que el tablero salga del agua.
+    if (EK && EK.compacto && !EK.faltanB1) {
+      EK.faltanB1 = true;
+      const poner = (grupo, modelo, inst, yExacta) => EK.compacto.push({ grupo, modelo, inst, orientar: false, yExacta, escalaPack: false });
+      poner('kelvin_aldea_rio_este_3', 'puente_madera', [[76.43, 5.0, 15.88, -2.915, 1.68]], true);
+      poner('kelvin_aldea_meandros_2', 'puente_madera', [[-88.01, 15.3, -44.62, -2.339, 1.54]], true);
+      poner('kelvin_aldea_rio_oeste', 'canoa', [[-169.3, 14.0, 54.3, 0.4, 0.8366]], true);
+      poner('kelvin_aldea_meandros', 'canoa', [[-51.4, 11.0, 47.6, 1.2, 0.8366]], true);
+      const casa = (grupo, modelo, x, z, rotY) => poner(grupo, modelo, [[x, 80, z, rotY, 0.8366]], false);
+      casa('kelvin_aldea_meandros_2', 'bohio_redondo', -81.7, -65.1, 0.4);
+      casa('kelvin_aldea_meandros_2', 'bohio_puntiagudo', -77.4, -75.6, 1.7);
+      casa('kelvin_aldea_meandros_2', 'torre_vigia', -68.9, -81.1, 0.9);
+      casa('kelvin_aldea_rio_oeste_2', 'bohio_redondo', -137.4, -53.1, 2.1);
+      casa('kelvin_aldea_lomas', 'bohio_redondo', -105.6, 95.8, 0.6);
+      casa('kelvin_aldea_colina', 'bohio_redondo', -8.4, 148.6, 1.1);
+      casa('kelvin_aldea_yunque', 'bohio_puntiagudo', -13.0, -70.3, 2.4);
+    }
   }
 
   // Materiales compartidos de los objetos (se crean al primer uso, cuando THREE ya está)
