@@ -664,6 +664,7 @@
         if (G.agua.splash) G.agua.splash(BOTADURA.x, nivelRio(), BOTADURA.z, 1.2);
         G.eventos.log('BoatLaunched'); G.comic.capture('bote'); G.audio.play('unlock'); dibujarCanoa(); colocarNavegante(); registrar();
         const y = nivelRio(); G.fx.burst(BOTADURA.x, y + 1.5, BOTADURA.z, 'gold', 30);
+        G.audio.play('splash'); if (G.fx && G.fx.burst) G.fx.burst(BOTADURA.x, y + 0.4, BOTADURA.z, 'bubbles', 16);
         decir([Vi('Flota… ¡flota derechita!')].concat(L('evento:BoatLaunched')), () => { G.misiones.check(); bautizar(() => G.ui.toast('Habla con la navegante en el muelle', 3000)); });
       }
       // D21 · El nombre de la canoa: de una lista corta o escrito con el filtro del creador de personaje (G.creador.filtroNombreLibre).
