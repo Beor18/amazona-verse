@@ -690,6 +690,7 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   .hud-btn { width: var(--tap); padding: 0; font-size: 0; gap: 0; --icon-size: 22px; }
   .creator-box { grid-template-columns: 1fr; }
   .stage-wrap { position: relative; aspect-ratio: 1 / 1; max-height: 48vh; margin-inline: auto; width: 100%; }
+  .stage-title h2 { font-size: var(--fs-2xl); }
   #creator.creator-corto #p-save { animation: jugar-invita 1.6s ease-in-out infinite; }
   @keyframes jugar-invita { 50% { transform: scale(1.035); } }
   .comic-body { grid-template-columns: 1fr; }
