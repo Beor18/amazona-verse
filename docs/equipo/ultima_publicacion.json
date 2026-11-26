@@ -1,14 +1,14 @@
 {
- "codigo": "68666801a76c70f79a6aaec955557c651b47b0c0",
+ "codigo": "740197578ed800ca80026c061f94905198dd8d48",
  "sitio": null,
- "fecha": "2026-11-26T09:56:51Z",
+ "fecha": "2026-11-26T20:09:29Z",
  "nota": "pruebas obligatorias en la nube en verde",
  "pruebas": {
   "estado": "pasa",
-  "inicio": "2026-11-26T09:51:17+00:00",
-  "duracion_s": 332.0,
+  "inicio": "2026-11-26T20:04:08+00:00",
+  "duracion_s": 319.1,
   "chrome": "Chrome/153.0.8010.12",
-  "huella_build": "b8bdab9176c28997dad07edfccff5ecd43759d83079eb52879f22073d98f1580",
+  "huella_build": "807be5c9fb55d98806742024d45c54b587835dd3fb67b06375ca3a5f1432967d",
   "requeridas_ok": 12,
   "requeridas": 12
  },
@@ -88,13 +88,11 @@
  },
  "consola": {
   "errores": 0,
-  "avisos": 2,
+  "avisos": 1,
   "muestras_error": []
  },
  "carga_inicial_mb": 23.08,
- "heap_mb": 124.9,
+ "heap_mb": 114.9,
  "fallas": [],
- "avisos": [
-  "presupuesto: 124.9 MB de heap a ~9 s (límite 120)"
- ]
+ "avisos": []
 }

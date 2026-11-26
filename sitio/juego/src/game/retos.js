@@ -442,6 +442,7 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
    mientras cuenta, la flecha (que estaría debajo del número) espera. Los resultados, compactos para que quepan sin cortar. */
 @media (max-height: 500px) and (orientation: landscape) {
   #retos .rt-cuenta { place-items: start start; padding-top: calc(env(safe-area-inset-top, 0px) + 58px); padding-left: 12px; font-size: 44px; -webkit-text-stroke-width: 4px; }
+  #retos.rt-nubes .rt-cuenta { place-items: start center; padding-left: 0; } /* la carrera: el 3 queda bajo el marcador, no en la esquina */
   #retos .rt-turbo { left: 16px; right: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 156px); transform: none; }
   #retos.rt-contando .rt-flecha { visibility: hidden; }
   #retos .rt-aviso { top: 39%; font-size: 26px; } /* bajo la etiqueta de la flecha y por encima de Vittata */
@@ -454,6 +455,11 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
   #retos .rt-fin .rt-datos { grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
   #retos .rt-fin .rt-dato { font-size: 17px; padding: 5px 6px; }
   #retos .rt-fin .rt-meta, #retos .rt-fin .rt-descanso, #retos .rt-fin .rt-nuevo { margin-bottom: 6px; }
+}
+/* Teléfono chico y tableta: el 3 enorme tapaba la flecha. Baja de tamaño y la flecha espera. */
+@media (max-width: 1100px) and (min-height: 501px) {
+  #retos.rt-nubes .rt-cuenta { place-items: start center; padding-top: calc(env(safe-area-inset-top, 0px) + 62px); padding-left: 0; font-size: 56px; -webkit-text-stroke-width: 4px; }
+  #retos.rt-nubes.rt-contando .rt-flecha { visibility: hidden; }
 }
 @media (max-width: 640px) and (orientation: portrait) { #retos .rt-turbo { left: auto; right: 12px; transform: none; bottom: calc(env(safe-area-inset-bottom, 0px) + 216px); } } /* teléfono en vertical: encima de Bajar e Impulso, lejos del joystick y de Subir */
 #retos-fx { position: fixed; inset: 0; pointer-events: none; z-index: var(--z-hud); }
@@ -676,7 +682,7 @@ body.retos-on:has(#retos.rt-banquete) #modo-salir { transition: none; }
       cerrarPaneles();
       if (modo) { modo.terminar(); modo = null; }
       st.fase = 'nada'; st.reto = null;
-      if (ui) ui.el.classList.remove('rt-tormenta', 'rt-banquete');
+      if (ui) ui.el.classList.remove('rt-tormenta', 'rt-banquete', 'rt-nubes');
       st.dos = null; C.nubes = false; C.nubeUsada = null; C.hojas = 0; C.turboT = C.rebufoT = C.rebufoAcc = 0; // F1-8: nada de la serie ni de las nubes se queda en memoria
       G.pausa.set('retos', false);
       const volverCreador = () => { if (st.creador && !(S.profile && S.profile.created)) G.creador.open(true); st.creador = false; };
@@ -791,6 +797,7 @@ body.retos-on:has(#retos.rt-banquete) #modo-salir { transition: none; }
       ui.el.hidden = false;
       ui.el.classList.toggle('rt-tormenta', reto === 'tormenta');
       ui.el.classList.toggle('rt-banquete', reto === 'banquete');
+      ui.el.classList.toggle('rt-nubes', reto === 'nubes');
       if (modo) modo.terminar();
       st.reto = reto; C.rio = reto === 'rio'; C.nubes = reto === 'nubes'; modo = reto === 'tormenta' ? TORMENTA : reto === 'banquete' ? G.banquete.modoRetos(compartido) : CARRERA;
       G.pausa.set('retos', false);
@@ -1544,6 +1551,7 @@ body.retos-on:has(#retos.rt-banquete) #modo-salir { transition: none; }
         if (Math.hypot(h.x - x, h.y - y, h.z - z) > T_NUBES.hojaRadio) continue;
         h.activa = false; ponerHoja(N, i, 0); C.hojas++; C.hojasRecogidas++;
         sonar('r_hoja', C.hojas);
+        if (!calma) G.fx.burst(x, y + 0.35, z, 'leaves', 5); // cada hoja suelta unas hojas: se ve que la cogiste
         if (C.hojas >= T_NUBES.hojasTurbo) {
           aviso('¡Aletazo turbo listo!'); C.avisoT = ADEL.avisoS;
           sonar('nido_chispa'); // premio que ya existe: la 3.ª hoja llena el turbo
@@ -2396,7 +2404,12 @@ body.retos-on:has(#retos.rt-banquete) #modo-salir { transition: none; }
           check('F1-8 · Nubes y hojas instanciadas: solo 2 mallas nuevas, sin anillos', inst === 2 && !anillosN && mN.count === T_NUBES.nubes * BOLAS_NUBE.length && C.N.mallaH.count === C.N.hojas.length, inst + ' / ' + anillosN);
           check('F1-8 · Las nubes son volumen (bolas suaves, no aros ni puertas)', mN.geometry.type === 'IcosahedronGeometry' && sc.y > 1 && sc.x > 1, mN.geometry.type + ' ' + sc.toArray().map(v => v.toFixed(1)).join(','));
           check('F1-8 · Nubes de detalle 3 (sin caras planas de cerca)', mN.geometry.parameters.detail === 3, mN.geometry.parameters.detail);
-          { let regla = null; for (const r of document.getElementById('retos-css').sheet.cssRules) if (r.media && /max-height:\s*500px/.test(r.media.mediaText)) regla = r;
+          { let regla = null; // hay dos @media de 500 px: la carrera (cuenta, flecha y resultados) y la tormenta. Se mira la de la carrera.
+            for (const r of document.getElementById('retos-css').sheet.cssRules) {
+              if (!r.media || !/max-height:\s*500px/.test(r.media.mediaText) || !r.cssRules) continue;
+              const cuerpo = Array.from(r.cssRules).map(x => x.cssText).join(' ');
+              if (/rt-contando \.rt-flecha/.test(cuerpo) && /\.rt-fin \.rt-datos/.test(cuerpo)) regla = r;
+            }
             const txt = regla ? Array.from(regla.cssRules).map(x => x.cssText).join(' ') : '';
             check('F1-8 · Teléfono en horizontal: cuenta bajo el HUD, flecha en espera y resultados compactos', /\.rt-cuenta/.test(txt) && /rt-contando \.rt-flecha/.test(txt) && /\.rt-fin \.rt-datos/.test(txt) && ui.el.classList.contains('rt-contando'), regla ? regla.media.mediaText : 'sin regla'); }
           const rg = document.createRange(); rg.selectNodeContents(ui.cuenta); const rc = rg.getBoundingClientRect();

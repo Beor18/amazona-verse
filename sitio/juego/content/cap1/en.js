@@ -3270,6 +3270,7 @@ window.AV_EN = {
  "Sembraste 1 árbol": "You planted 1 tree",
  " · Mejor racha: {}": " · Best streak: {}",
  "Vuela más alto para soltar": "Fly higher to drop",
+ "Vuela sobre la tierra oscura. Suelta en el aro.": "Fly over the dark soil. Drop on the ring.",
  "¡Semillas listas!": "Seeds ready!",
  "¡Viento! La sombra se mueve con él": "Wind! The shadow drifts with it",
  "Suelta cada semilla cuando la sombra pise la tierra oscura": "Drop each seed when the shadow is on the dark soil",

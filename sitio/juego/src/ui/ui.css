@@ -691,6 +691,8 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   .creator-box { grid-template-columns: 1fr; }
   .stage-wrap { position: relative; aspect-ratio: 1 / 1; max-height: 48vh; margin-inline: auto; width: 100%; }
   .stage-title h2 { font-size: var(--fs-2xl); }
+  #creator.creator-corto #p-save { animation: jugar-invita 1.6s ease-in-out infinite; }
+  @keyframes jugar-invita { 50% { transform: scale(1.035); } }
   .comic-body { grid-template-columns: 1fr; }
   .title-hero { width: min(30vh, 46vw); }
 }
@@ -712,7 +714,7 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #steps { margin: 0; padding-top: 10px; }
   #steps li::before { height: 4px; }
   /* T6: el objetivo en 2 líneas como mucho (antes 1 línea cortada con «…») */
-  #steps li.now { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 15px; line-height: 1.25; white-space: normal; overflow: hidden; }
+  #steps li.now { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 14px; line-height: 1.25; white-space: normal; overflow: hidden; }
   /* T6: los contadores juntos: el inventario va pegado al reloj del marcador (ui.js pone --mc-w con su ancho) */
   /* A 390 el objetivo son 2 líneas: los recursos compartían la fila y tapaban «está en lo alto». Van debajo. */
   #quest { flex: 1 1 100%; }
@@ -731,6 +733,8 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   .quest-toggle::after { content: ""; position: absolute; right: 12px; top: 15px; border: 6px solid transparent; border-top-color: var(--c-text-muted); transform-origin: 50% 25%; transition: transform var(--dur-2) var(--ease-out); }
   #quest.abierto .quest-toggle::after { transform: rotate(180deg); }
   #inv { padding: 3px; }
+  /* Ciclo 6 · 390: sin madera ni piedra el inventario era un punto verde de 10 px. */
+  #inv:not(:has(.res:not([hidden]))) { display: none; }
   #inv .res { gap: 4px; padding-right: var(--sp-2); }
   #inv small { display: none; }
   /* Aviso de acción: hasta 2 líneas en vez de cortar */
@@ -780,7 +784,7 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   body:is(:has(#dialog:not([hidden])), :has(#bocadillos:not([hidden])), :has(#emotes:not([hidden]))) #toast { min-height: 0; padding: var(--sp-2) var(--sp-3); font-size: calc(12.5px * var(--fs-k, 1)); line-height: 1.28; }
   body:is(:has(#dialog:not([hidden])), :has(#bocadillos:not([hidden])), :has(#emotes:not([hidden]))) #toast::before { display: none; }
   body:is(:has(#dialog:not([hidden])), :has(#bocadillos:not([hidden])), :has(#emotes:not([hidden]))) #toast b { font-size: calc(13px * var(--fs-k, 1)); line-height: 1.2; }
-  #dialog { bottom: calc(env(safe-area-inset-bottom, 0px) + var(--sp-3)); gap: 0 var(--sp-3); padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-3); }
+  #dialog { bottom: calc(env(safe-area-inset-bottom, 0px) + 22px); gap: 0 var(--sp-3); padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-3); }
   .d-portrait { width: 76px; height: 76px; margin-top: -36px; border-width: 4px; }
   #dialog .who { font-size: var(--fs-md); margin-top: -30px; }
   #dialog p#d-text, #d-type { font-size: 17px; }
@@ -797,8 +801,28 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #creator.creator-corto #p-save { width: auto; flex: 1 1 auto; min-width: 0; }
   #creator.creator-corto #p-cancel { flex: 0 0 auto; min-height: 48px; }
   #creator.creator-corto .stage-wrap { max-height: 38vh; }
+  /* Teléfono alto (390×844): el título iba encima de los ojos. Queda en la tarjeta, encima del lienzo. */
+  @media (min-height: 701px) {
+    #creator .stage-wrap { display: flex; flex-direction: column; aspect-ratio: auto; max-height: none; }
+    #creator .stage-title { position: static; margin: 10px 12px 0; }
+    #creator .stage-title h2 { font-size: 26px; line-height: 1.05; }
+    #creator #p-stage { width: 100%; height: 240px; flex: none; }
+    #creator .stage-hint { position: static; margin: 8px auto 10px; }
+  }
   @keyframes name-brillo { 50% { transform: scale(1.14); } }
   #creator.creator-corto #p-name-azar { animation: name-brillo 1.6s ease-in-out infinite; }
+  /* 360×640: el escenario se comía la pantalla y «Guardar» partía el nombre. */
+  @media (max-height: 700px) {
+    #creator { display: flex; flex-direction: column; padding: 6px; overflow: hidden; box-sizing: border-box; }
+    .creator-box { display: flex; flex-direction: column; height: 100%; max-height: 100%; min-height: 0; overflow: hidden; gap: 6px; animation: none; }
+    .stage-wrap { position: relative; flex: none; width: 100%; max-height: 18vh; aspect-ratio: 16 / 9; margin-inline: auto; }
+    .creator-side { flex: 1 1 auto; min-height: 0; max-height: none; overflow: hidden; display: flex; flex-direction: column; padding: 6px 8px 0; gap: 2px; }
+    .creator-side .lbl { margin-top: 0; }
+    #p-slots { flex: none; height: 120px; max-height: 120px; overflow: auto; margin-bottom: 4px; }
+    .creator-side .row.center:last-child { position: static !important; bottom: auto; flex: none; margin: 8px -8px 0 !important; padding: 4px 8px 6px; background: var(--c-surface-solid); }
+    #p-save, #p-cancel { min-height: 44px; }
+    #p-name-azar { animation: name-brillo 1.6s ease-in-out infinite; }
+  }
   .slot { grid-template-columns: 1fr; gap: var(--sp-2); }
   .pause-grid { gap: var(--sp-2); }
   #pause { padding: var(--sp-5) var(--sp-4); }
@@ -875,6 +899,17 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   /* F20 r2: en los minijuegos del mundo, la barra del juego, su panel final y sus pistas tapaban «Diario» y «Gestos» (se veía «iario 0/13»).
      Mientras dura el minijuego no hacen falta: se quedan Pausa y los controles. */
   body:is(.semillas-on, .escondite-on, .piloto-on, .sigueme-on, .foto-on, .sembradora-on, .planeo-on, .pichones-on) :is(#b-diary, #b-emotes) { visibility: hidden; }
+}
+/* Tableta apaisada (1024×768): el escritorio no cabe y Guardar parte la última fila. */
+@media (min-width: 761px) and (min-height: 600px) and (max-height: 820px) and (orientation: landscape) {
+  #creator { display: flex; align-items: stretch; justify-content: center; padding: 8px; box-sizing: border-box; overflow: hidden; }
+  .creator-box { height: 100%; max-height: 100%; min-height: 0; align-items: stretch; overflow: hidden; animation: none; gap: 10px; }
+  .stage-wrap { aspect-ratio: auto; height: 100%; max-height: 100%; min-height: 0; }
+  .creator-side { min-height: 0; max-height: 100%; overflow: hidden; display: flex; flex-direction: column; padding: 8px 10px 0; }
+  .creator-side .row.center:last-child { position: static !important; bottom: auto; flex: none; margin: 8px 0 0; padding: 8px 10px; background: var(--c-surface-solid); }
+  .thumbs { max-width: 100%; }
+  #p-slots { flex: none; max-height: 112px; overflow: auto; margin-bottom: 4px; }
+  #p-save, #p-cancel { min-height: 44px; }
 }
 
 /* ---------- 6. Animaciones ---------- */

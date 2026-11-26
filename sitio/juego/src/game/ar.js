@@ -65,6 +65,14 @@
       document.head.appendChild(s);
     }
 
+    const FALLO = {
+      iphone: ['Toca «Ver en tu casa». Si no se abre, seguimos en el juego.', 'Tap “See her at home”. If it does not open, we will keep playing.'],
+      aparato: ['Este aparato todavía no puede mostrar a Vittata en tu casa. Seguimos en el juego.', 'This device cannot show Vittata in your home yet. We will keep playing.'],
+      camara: ['No se pudo abrir la cámara. Seguimos en el juego.', 'The camera could not open. We will keep playing.'],
+      abrir: ['No se pudo abrir. Seguimos en el juego.', 'It could not open. We will keep playing.'],
+    };
+    let falloClave = null;
+    function textoFallo(clave) { const p = FALLO[clave]; return p ? L(p[0], p[1]) : ''; }
     function ponerTexto(sel, texto) { const e = dlg && dlg.querySelector(sel); if (e) e.textContent = texto; }
     function repintar() {
       if (!dlg) return;
@@ -74,6 +82,8 @@
       ponerTexto('[data-ar="entrar"]', L('Ver a Vittata aquí', 'See Vittata here'));
       ponerTexto('[data-ar="casa"]', L('Ver en tu casa', 'See her at home'));
       ponerTexto('[data-ar="seguir"]', L('Seguir en el juego', 'Keep playing'));
+      const p = dlg.querySelector('[data-ar="msg"]');
+      if (p && falloClave && !p.hidden) p.textContent = textoFallo(falloClave);
     }
     function trasIdioma() { setTimeout(repintar, 0); }
     try {
@@ -86,6 +96,7 @@
       }
     } catch (e) { /* sin idioma */ }
     function quitarAviso() {
+      falloClave = null;
       if (dlg) { try { if (dlg.open) dlg.close(); } catch (e) { /* ya cerrado */ } dlg.remove(); dlg = null; }
     }
 
@@ -103,14 +114,16 @@
       dlg.addEventListener('click', e => {
         const b = e.target.closest('button'); if (!b) return;
         if (b.dataset.ar === 'seguir' || b.dataset.ar === 'ok') quitarAviso();
-        else if (b.dataset.ar === 'entrar') entrar().catch(() => fallo(L('No se pudo abrir. Seguimos en el juego.', 'It could not open. We will keep playing.')));
+        else if (b.dataset.ar === 'entrar') entrar().catch(() => fallo('abrir'));
       });
       dlg.addEventListener('cancel', () => quitarAviso());
       document.body.appendChild(dlg);
       return dlg;
     }
 
-    function fallo(texto) {
+    function fallo(clave) {
+      falloClave = clave;
+      const texto = textoFallo(clave);
       const p = dlg && dlg.querySelector('[data-ar="msg"]');
       const ir = dlg && dlg.querySelector('[data-ar="entrar"]');
       if (ir) ir.hidden = true;
@@ -129,10 +142,10 @@
 
     async function entrar(xrForzado) {
       if (!(await soporta(xrForzado))) {
-        if (iphone()) return fallo(L('Toca «Ver en tu casa». Si no se abre, seguimos en el juego.', 'Tap “See her at home”. If it does not open, we will keep playing.'));
-        return fallo(L('Este aparato todavía no puede mostrar a Vittata en tu casa. Seguimos en el juego.', 'This device cannot show Vittata in your home yet. We will keep playing.'));
+        if (iphone()) return fallo('iphone');
+        return fallo('aparato');
       }
-      try { await sesionAR(); } catch (e) { return fallo(L('No se pudo abrir la cámara. Seguimos en el juego.', 'The camera could not open. We will keep playing.')); }
+      try { await sesionAR(); } catch (e) { return fallo('camara'); }
       return '';
     }
 
