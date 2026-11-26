@@ -958,7 +958,11 @@ window.AVV18Minigolf = function (G) {
       '#v18-golf .vg-bot,#v18-golf .vg-bot2,#v18-golf .vg-bot4,#v18-golf .vg-bot6{gap:6px;margin-top:6px}#v18-golf .vg-bot4 button,#v18-golf .vg-bot6 button{min-height:48px;font-size:15px}' +
       '#v18-golf .vg-elige p,#v18-golf .vg-fin p{font-size:16px;margin:1px 0}#v18-golf .vg-fin .vg-m{font-size:18px}#v18-golf .vg-fila{font-size:15px}#v18-golf .vg-elige-salir{margin-top:6px}' +
       '#v18-golf .vg-guia{margin-top:6px;font-size:13px;padding:3px 10px}' +
-      '#v18-golf .vg-bot6{grid-template-columns:repeat(3,1fr)}#v18-golf .vg-bot6 button{padding:4px 2px}#v18-golf .vg-h small{font-size:11px}#v18-golf .vg-elige .vg-et{font-size:12px}}';
+      '#v18-golf .vg-bot6{grid-template-columns:repeat(3,1fr)}#v18-golf .vg-bot6 button{padding:4px 2px}#v18-golf .vg-h small{font-size:11px}#v18-golf .vg-elige .vg-et{font-size:12px}}' +
+      '@media (max-width:1000px),(max-height:520px){#v18-golf button kbd{display:none}}' +
+      '@media (max-width:760px),(orientation:landscape) and (max-height:520px){#v18-golf:has([data-k="elige"]:not([hidden])) :is(.vg-presenta,.vg-meta,[data-k="barraW"],[data-k="fuerzaEt"]){display:none}}' +
+      '@keyframes vg-invita{50%{transform:scale(1.05)}}#v18-golf [data-k="elige"]:not([hidden]) [data-a="j1"]{animation:vg-invita 1.4s ease-in-out infinite}' +
+      '@media (prefers-reduced-motion:reduce){#v18-golf [data-a="j1"]{animation:none}}';
     document.head.appendChild(st);
   }
   function montarHud() {
@@ -1061,7 +1065,7 @@ window.AVV18Minigolf = function (G) {
     if (PK.hoyo !== HOYO.n) { PK.hoyo = HOYO.n; texto('hoyoT', tx('hoyo')); texto('parT', tx('par')); texto('metaS', tx('metaOro')); }
     if (PK.golpes !== A.golpes) { PK.golpes = A.golpes; texto('golpes', golpesTxt(A.golpes)); }
     const tt = tactil(); if (PK.tactil !== tt) { PK.tactil = tt; hud.el.classList.toggle('tactil', tt); }
-    const pk = pistaK(tt); if (PK.guia !== pk) { const g = hud.q('guia'); PK.guia = pk; texto('guia', TXT[pk] || ''); g.classList.remove('nueva'); if (pk) { void g.offsetWidth; g.classList.add('nueva'); } }
+    const pk = pistaK(tt || innerWidth <= 1000 || innerHeight <= 520); if (PK.guia !== pk) { const g = hud.q('guia'); PK.guia = pk; texto('guia', TXT[pk] || ''); g.classList.remove('nueva'); if (pk) { void g.offsetWidth; g.classList.add('nueva'); } }
     const r = record(), m = multi(), kr = m ? -1 : r ? r.mejor : 0;
     if (PK.record !== kr) { PK.record = kr; texto('record', m ? '' : r ? recordTxt(r.mejor) : TXT.sinRecord); }
     const kt = m && A.fase !== 'nido' ? A.turno : -1; if (PK.turno !== kt) { PK.turno = kt; texto('turno', kt >= 0 ? turnoTxt(kt) : ''); }

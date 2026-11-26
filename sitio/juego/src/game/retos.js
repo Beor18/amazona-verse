@@ -434,7 +434,7 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
 #retos .rt-nhojas { font: 700 16px/1 var(--font-display); color: #ffd27a; font-variant-numeric: tabular-nums; }
 @keyframes rt-brillo { 50% { filter: drop-shadow(0 0 7px #ffd27a); } }
 #retos .rt-flecha.rt-cerca svg { animation: rt-brillo .55s ease-in-out infinite; } /* sin transform: el giro de la flecha vive ahí */
-#retos .rt-pts.rt-salto { animation: rt-latido .4s var(--ease-pop); }
+#retos .rt-pts.rt-salto, #retos .rt-puntos.rt-salto { animation: rt-latido .4s var(--ease-pop); }
 #retos .rt-turbo .rt-tecla { color: #ffd27a; opacity: 1; }
 @media (max-width: 640px) { #retos .rt-turbo b { font-size: 15px; } }
 #retos .rt-tag.rt-rebufo { box-shadow: 0 0 0 3px rgba(200,245,154,.55), 0 0 14px rgba(200,245,154,.9); }
@@ -465,7 +465,30 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
 @keyframes rt-pop { 0% { transform: scale(1.8); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes rt-aviso { 0% { opacity: 0; transform: translate(-50%, 12px) scale(.8); } 15% { opacity: 1; transform: translate(-50%, 0) scale(1.05); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -16px); } }
 @keyframes rt-latido { 50% { transform: scale(1.08); } }
-@media (prefers-reduced-motion: reduce) { #retos .rt-cuenta.pop, #retos .rt-aviso.ver, #retos .rt-panel, #retos .rt-nuevo, #retos-fx .rt-lineas, #retos .rt-turbo button.lleno, #retos .rt-turbo .rt-hojas i, #retos .rt-turbo .rt-hojas i.si, #retos .rt-flecha.rt-cerca svg, #retos .rt-pts.rt-salto { animation-duration: .01s; animation-iteration-count: 1; } }
+@media (prefers-reduced-motion: reduce) { #retos .rt-cuenta.pop, #retos .rt-aviso.ver, #retos .rt-panel, #retos .rt-nuevo, #retos-fx .rt-lineas, #retos .rt-turbo button.lleno, #retos .rt-turbo .rt-hojas i, #retos .rt-turbo .rt-hojas i.si, #retos .rt-flecha.rt-cerca svg, #retos .rt-pts.rt-salto, #retos .rt-puntos.rt-salto, #retos.rt-tormenta .rt-vidas i { animation-duration: .01s; animation-iteration-count: 1; } }
+/* Solo ¡Escapa de la tormenta! y ¡Banquete!: el 3 no tapa Salir, y en el teléfono se lee qué número es */
+#retos.rt-tormenta .rt-lbl, #retos.rt-banquete .rt-lbl { display: inline; }
+@media (max-width: 640px) { #retos.rt-tormenta .rt-chip, #retos.rt-banquete .rt-chip { font-size: 15px; padding: 4px 8px; } #retos.rt-tormenta .rt-lbl, #retos.rt-banquete .rt-lbl { font-size: 10px; letter-spacing: 0; } }
+/* Al girar el teléfono, .btn anima transform: si Salir iba centrado con translateX(-50%),
+   left salta a 12 px y el resto del translate lo saca por la izquierda un instante. Sin transición no se sale. */
+body.retos-on:has(#retos.rt-tormenta) #modo-salir,
+body.retos-on:has(#retos.rt-banquete) #modo-salir { transition: none; }
+@media (max-height: 500px) and (orientation: landscape) {
+  #retos.rt-tormenta .rt-cuenta, #retos.rt-banquete .rt-cuenta { padding-top: calc(env(safe-area-inset-top, 0px) + 118px); font-size: 36px; }
+  body.retos-on:has(#retos.rt-tormenta) #modo-salir,
+  body.retos-on:has(#retos.rt-banquete) #modo-salir {
+    left: max(12px, env(safe-area-inset-left, 0px)) !important; right: auto !important; width: auto; margin-inline: 0;
+    top: calc(env(safe-area-inset-top, 0px) + 92px) !important; bottom: auto !important; transform: none !important;
+  }
+}
+@media (max-width: 700px) and (orientation: portrait) {
+  body.retos-on:has(#retos.rt-tormenta) #modo-salir {
+    left: 0 !important; right: 0 !important; width: max-content; margin-inline: auto;
+    top: auto !important; bottom: calc(env(safe-area-inset-bottom, 0px) + 210px); transform: none !important;
+  }
+}
+@keyframes rt-pluma { 50% { filter: brightness(1.3); } }
+#retos.rt-tormenta .rt-vidas i:not(.off) { animation: rt-pluma 1.4s ease-in-out infinite; }
 @media (max-width: 640px) { #retos .rt-chip { font-size: 17px; padding: 5px 10px; } #retos .rt-pos b { font-size: 21px; } #retos .rt-lbl { display: none; } #retos .rt-aviso { font-size: 24px; } }
 /* 390×844: el panel se iba a la derecha (For two y la X quedaban fuera) y el turbo no avisaba al llenarse */
 @media (max-width: 420px) {
@@ -653,6 +676,7 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
       cerrarPaneles();
       if (modo) { modo.terminar(); modo = null; }
       st.fase = 'nada'; st.reto = null;
+      if (ui) ui.el.classList.remove('rt-tormenta', 'rt-banquete');
       st.dos = null; C.nubes = false; C.nubeUsada = null; C.hojas = 0; C.turboT = C.rebufoT = C.rebufoAcc = 0; // F1-8: nada de la serie ni de las nubes se queda en memoria
       G.pausa.set('retos', false);
       const volverCreador = () => { if (st.creador && !(S.profile && S.profile.created)) G.creador.open(true); st.creador = false; };
@@ -765,6 +789,8 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
       if (!entrar()) return false;
       cerrarPaneles(); limpiarFx();
       ui.el.hidden = false;
+      ui.el.classList.toggle('rt-tormenta', reto === 'tormenta');
+      ui.el.classList.toggle('rt-banquete', reto === 'banquete');
       if (modo) modo.terminar();
       st.reto = reto; C.rio = reto === 'rio'; C.nubes = reto === 'nubes'; modo = reto === 'tormenta' ? TORMENTA : reto === 'banquete' ? G.banquete.modoRetos(compartido) : CARRERA;
       G.pausa.set('retos', false);

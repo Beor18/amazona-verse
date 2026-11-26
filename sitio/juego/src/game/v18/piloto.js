@@ -51,7 +51,17 @@ window.AVV18Piloto = function (G) {
       marcas: o => [0, 1, 2, 3, 4, 5].map(k => { const a = k / 6 * Math.PI * 2; return nube(o, 20 + Math.sin(a) * 16, Math.cos(a) * 16 - 16, 8 + (k % 2) * 3); }) },
   ];
   const punto = (o, ade, lado) => ({ x: o.x + o.fx * ade - o.fz * lado, z: o.z + o.fz * ade + o.fx * lado });
-  function nube(o, ade, lado, alto) { const p = punto(o, ade, lado); return { tipo: 'nube', x: p.x, z: p.z, y: techo(p.x, p.z) + alto, r: 3.2 }; }
+  function nube(o, ade, lado, alto) {
+    let la = lado, al = alto;
+    // En 844×390 la nube grande quedaba junto al borde de arriba, bajo el HUD. Baja y se aparta; no se agranda.
+    try {
+      if (window.matchMedia && matchMedia('(max-height: 520px) and (orientation: landscape)').matches && alto >= 8) {
+        al = Math.max(3.6, alto - 5);
+      }
+    } catch (e) { /* sin matchMedia */ }
+    const p = punto(o, ade, la);
+    return { tipo: 'nube', x: p.x, z: p.z, y: techo(p.x, p.z) + al, r: 3.2 };
+  }
   function hoja(o, ade, lado, alto) { const p = punto(o, ade, lado); return { tipo: 'hoja', x: p.x, z: p.z, y: techo(p.x, p.z) + alto, r: 2.8 }; }
   // Una percha de verdad (rama, baranda, poste) entre 8 y 30 m, por delante; si no hay, un claro en el suelo
   function percha(o) {
@@ -152,6 +162,9 @@ window.AVV18Piloto = function (G) {
     try {
       const m0 = F.marcas[0];
       if (m0 && m0.tipo === 'nube' && !G.quiet && G.fx && G.fx.burst) G.fx.burst(m0.x, m0.y, m0.z, 'stars', 8);
+      try {
+        if (m0 && m0.tipo === 'nube' && !G.quiet && G.audio && window.matchMedia && matchMedia('(max-height: 520px) and (orientation: landscape)').matches) G.audio.play('planeo');
+      } catch (e) { /* sin audio */ }
     } catch (e) { /* sin fx */ }
     return true;
   }

@@ -252,9 +252,25 @@ window.AVFotoSafari = function (G) {
     E.cam = true; E.camT = 0; E.vivo = -1; E.vcode = -1; E.pend = false; camara(true); verVittata(false); sonar('boton');
     document.body.classList.add('foto-cam'); pintarVisor();
   }
+  function quitarYa() {
+    const b = G.input && G.input.actBtn;
+    if (b) b.classList.remove('fs-ya');
+    if (fotoEl) fotoEl.classList.remove('fs-ya');
+  }
+  // Las 3 estrellas en vivo: el botón Foto late, suena nido_chispa y salen estrellas (el momento de disparar)
+  function premioYa() {
+    sonar('nido_chispa');
+    const b = G.input && G.input.actBtn;
+    for (const el of [b, fotoEl]) {
+      if (!el) continue;
+      el.classList.remove('fs-ya'); void el.offsetWidth; el.classList.add('fs-ya');
+    }
+    if (reducido()) return;
+    try { if (G.fx && G.fx.burst) G.fx.burst(o1.x, o1.y + 0.35, o1.z, 'stars', 8); } catch (e) { /* sin fx */ }
+  }
   function cerrarCam() {
     if (!E.cam) return;
-    E.cam = false; E.pend = false; camara(false); verVittata(true); document.body.classList.remove('foto-cam'); pintarVisor();
+    E.cam = false; E.pend = false; quitarYa(); camara(false); verVittata(true); document.body.classList.remove('foto-cam'); pintarVisor();
   }
   function disparar() {
     if (E.fase !== 'juego' || !carta.tipo) return;
@@ -305,7 +321,11 @@ window.AVFotoSafari = function (G) {
         if (E.pend && E.camT >= ESPERA) { E.pend = false; disparar(); if (!E.cam || !carta.tipo) return; }
         const s = carta.vivo ? medir() : 0;
         const c = s * 10 + vtxIdx(s);
-        if (c !== E.vcode) { E.vcode = c; E.vivo = s; pintarVisor(); }
+        if (c !== E.vcode) {
+          const antes = E.vivo;
+          E.vcode = c; E.vivo = s; pintarVisor();
+          if (s === 3 && antes !== 3) premioYa(); else if (s !== 3) quitarYa();
+        }
       }
       if (carta.t <= 0) escapo();
     }
@@ -346,7 +366,7 @@ window.AVFotoSafari = function (G) {
       '#fs-visor .fs-marco::before,#fs-visor .fs-marco::after{content:"";position:absolute;inset:0;border-radius:10px;border:4px solid #fff;clip-path:polygon(0 0,22% 0,22% 4px,4px 4px,4px 22%,0 22%,0 78%,4px 78%,4px calc(100% - 4px),22% calc(100% - 4px),22% 100%,78% 100%,78% calc(100% - 4px),calc(100% - 4px) calc(100% - 4px),calc(100% - 4px) 78%,100% 78%,100% 22%,calc(100% - 4px) 22%,calc(100% - 4px) 4px,78% 4px,78% 0,100% 0,100% 100%,0 100%)}' +
       '#fs-visor .fs-marco::after{border:0;inset:calc(50% - 9px);border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.75);clip-path:none}#fs-visor.s3 .fs-marco::before{border-color:#ffd23f}' +
       '#fs-visor .fs-est{position:absolute;left:50%;top:calc(50% + 26vmin + 10px);transform:translateX(-50%);display:flex;gap:6px;padding:4px 12px;border-radius:999px;background:rgba(16,36,28,.82)}#fs-visor .fs-est svg{width:30px;height:30px;fill:rgba(255,255,255,.28)}#fs-visor .fs-est svg.on{fill:#ffd23f}' +
-      '#fs-visor .fs-vtx{position:absolute;left:50%;top:calc(50% - 26vmin + 8px);transform:translateX(-50%);width:max-content;max-width:calc(52vmin - 16px);text-align:center;line-height:1.2;padding:4px 12px;border-radius:14px;background:rgba(16,36,28,.82);color:#fff8e6;font:600 14px Fredoka,system-ui,sans-serif;box-sizing:border-box}#fs-visor .fs-vtx:empty{display:none}' +
+      '#fs-visor .fs-vtx{position:absolute;left:50%;top:calc(50% - 26vmin + 4px);transform:translateX(-50%);width:max-content;max-width:calc(52vmin - 20px);text-align:center;line-height:1.15;padding:2px 10px;border-radius:14px;background:rgba(16,36,28,.82);color:#fff8e6;font:600 13px Fredoka,system-ui,sans-serif;box-sizing:border-box}#fs-visor .fs-vtx:empty{display:none}' +
       '#fs-visor button{position:absolute;right:calc(50% - 26vmin + 6px);top:calc(50% + 26vmin - 50px);padding:0;width:44px;font-size:20px;pointer-events:auto;background:rgba(255,243,214,.92)}' +
       '#fs-hud button,#fs-fin button,#fs-visor button,#fs-foto{min-height:44px;min-width:44px;padding:4px 16px;border-radius:22px;border:0;font:700 16px Fredoka,system-ui,sans-serif;background:#fff3d6;color:#3b2a14;box-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer;touch-action:manipulation}' +
       '#fs-hud button.salir,#fs-fin button.salir{background:#ffd0c4}#fs-hud button:focus-visible,#fs-fin button:focus-visible,#fs-visor button:focus-visible,#fs-foto:focus-visible{outline:4px solid #ffd27a;outline-offset:2px}' +
@@ -366,6 +386,10 @@ window.AVFotoSafari = function (G) {
       'body.foto-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela){visibility:hidden!important}' +
       'body.foto-fin :is(#minimapa,#guia-hud,#keyhint,#acts,#stick,#emotes,#tag,#fs-foto,#sys){visibility:hidden!important}' + // ni los botones redondos del lateral detrás del panel
       'body.foto-on #rio-visor{display:none!important}' + // el visor del río sí se enciende (los peces se ven), pero sin su letrero: manda el de la cámara
+      'body.foto-cam #fs-hud [data-k="msg"]{visibility:hidden}' + // el aviso de salida no se queda encima del marco
+      '#b-act.fs-ya,#fs-foto.fs-ya{animation:fs-ya .55s ease-in-out 3}@keyframes fs-ya{50%{transform:scale(1.12)}}' +
+      'html.mov-reducido :is(#b-act.fs-ya,#fs-foto.fs-ya){animation:none;outline:3px solid #ffd23f}' +
+      '@media (prefers-reduced-motion:reduce){:is(#b-act.fs-ya,#fs-foto.fs-ya){animation:none;outline:3px solid #ffd23f}}' +
       // en táctil el botón Acción dice «Foto» y lleva el icono de la cámara (no los destellos)
       'body.foto-on #b-act{--icon:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Cpath d=%27M4 7h3l2-2h6l2 2h3v12H4zm8 2.4a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2z%27 fill-rule=%27evenodd%27/%3E%3C/svg%3E")}';
     document.head.appendChild(st);
@@ -424,7 +448,7 @@ window.AVFotoSafari = function (G) {
     q(visorEl, 'est').setAttribute('aria-label', L(`${s} de 3 estrellas`, `${s} of 3 stars`));
     const t = carta.tipo;
     const i = vtxIdx(s);
-    q(visorEl, 'vtx').textContent = i === 0 ? '' : i === 1 ? L('Mira hacia el animal: la cámara te ayuda', 'Face the animal: the camera helps you') : i === 2 ? L('Acércate despacio…', 'Get closer, slowly…') : i === 3 ? L('Quieta…', 'Hold still…') : i === 4 ? L('Se escondió: espera quieta', 'It hid: wait, keep still') : i === 5 ? L('¡Ahora!', 'Now!')
+    q(visorEl, 'vtx').textContent = i === 0 ? '' : i === 1 ? L('Mira al animal', 'Look at the animal') : i === 2 ? L('Acércate despacio…', 'Get closer, slowly…') : i === 3 ? L('Quieta…', 'Hold still…') : i === 4 ? L('Se escondió: espera quieta', 'It hid: wait, keep still') : i === 5 ? L('¡Ahora!', 'Now!')
       : i === 7 ? L('No se ve: vuela bajo sobre el agua', "Can't see it: fly low over the water") : i === 8 ? L('Falta: ', 'Needed: ') + textoCond(carta.cond) : i === 9 ? L('Un momento…', 'One moment…') : L('Al centro…', 'To the center…');
     const bc = visorEl.querySelector('[data-a="cerrar"]'); bc.textContent = '✕'; bc.setAttribute('aria-label', L('Cerrar la cámara', 'Close the camera'));
     pintarHud();
@@ -478,7 +502,7 @@ window.AVFotoSafari = function (G) {
     document.body.classList.add('foto-on'); document.body.classList.remove('foto-fin');
     try { if (G.menuModos && G.menuModos.encuadrar) G.menuModos.encuadrar(); } catch (e) { /* sin menú */ } // F20 r2: la cámara no sale metida en la ladera
     nuevaCarta(); pintarCarta(); pintarHud(); verHud();
-    aviso(L('Encuentra al animal y sácale su mejor foto', 'Find the animal and take its best photo'), 'bien'); E.msgT = 4;
+    aviso(L('Sigue la flecha', 'Follow the arrow'), 'bien'); E.msgT = 4;
     sonar('boton');
     return true;
   }

@@ -805,10 +805,31 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
 }
 @media (max-width: 360px) { #emotes { grid-template-columns: minmax(0, 1fr); } } /* a 320 px «Molestia» no cabe en media columna */
 @media (max-height: 520px) and (orientation: landscape) {
-  :root { --stick: 116px; --tap-xl: 80px; --tap-lg: 58px; }
+  :root { --stick: 96px; --tap-xl: 80px; --tap-lg: 58px; }
+  #knob { width: 52px; height: 52px; left: calc(50% - 26px); top: calc(50% - 26px); }
   #missions, #indicators { display: none; }
   #quest { width: 300px; }
-  #prompt { bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); }
+  /* Ciclo 5 · 844×390: «Diario», «Gestos» y «Construir» con texto cruzaban el centro y tapaban el camino. Quedan iconos, a la derecha. */
+  #sys .hud-btn { width: var(--tap); padding: 0; font-size: 0; gap: 0; --icon-size: 22px; }
+  /* Sin contadores (caps. 2 a 6) los iconos van arriba. Con madera y piedra, bajan para no taparlos. */
+  #sys { top: calc(env(safe-area-inset-top, 0px) + 8px); }
+  #top:has(.res:not([hidden])) ~ #sys { top: calc(env(safe-area-inset-top, 0px) + 64px); }
+  #inv:not(:has(.res:not([hidden]))) { display: none; }
+  /* «Descubriste» a 6vw tapaba el objetivo y los botones. Baja y no se agranda. */
+  #fx-descubre { padding-top: 108px !important; }
+  #fx-descubre .fx-d1 { font-size: 12px !important; }
+  #fx-descubre .fx-d2 { font-size: 22px !important; max-width: min(460px, 62vw); }
+  #steps li.now { font-size: 14px; line-height: 1.2; }
+  /* El diálogo medía ~158 px y «Seguir» se salía por debajo de los 390. */
+  #dialog { bottom: 6px; width: min(680px, calc(100vw - 16px)); padding: 8px 12px 8px 8px; }
+  .d-portrait { width: 72px; height: 72px; margin-top: -20px; border-width: 4px; }
+  #dialog .who { margin-top: -20px; font-size: 16px; }
+  .d-say { min-height: 0; margin: 4px 0 2px; max-height: 2.7em; overflow-y: auto; }
+  #dialog p#d-text, #d-type { font-size: 16px; line-height: 1.3; }
+  #b-fly.ciclo5-invita { animation: ring 1.1s ease-out 3; }
+  /* La pista de Acción iba a 24 px del borde y se sentaba encima de Saltar. */
+  #prompt { bottom: auto; top: 128px; left: auto; right: calc(max(var(--sp-3), env(safe-area-inset-right, 0px)) + 12px); max-width: min(260px, 42vw); }
+  #prompt.ciclo5-pulso { animation: nudge 0.9s ease-in-out 3; }
   .title-main { padding-bottom: var(--sp-6); gap: var(--sp-2); }
   .logo svg { width: min(460px, 60vw); }
   .title-hero { width: 38vh; }
@@ -831,7 +852,7 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
      los contadores; sin objetivo (Vuelo libre) sigue el hueco que mide ui.js. «Salir» del Vuelo libre baja bajo el aviso. */
   #toast { min-height: 0; padding: 8px 14px 8px 52px; font-size: calc(14px * var(--fs-k, 1)); line-height: 1.3; }
   #toast::before { left: 10px; width: 32px; height: 32px; margin-top: -16px; background-size: 18px, auto; }
-  body:has(#quest:not([hidden])) #toast { left: calc(max(var(--sp-3), env(safe-area-inset-left, 0px)) + 308px); right: max(var(--sp-3), var(--hud-r, 0px), env(safe-area-inset-right, 0px)); margin-inline: 0; width: fit-content; max-width: none; }
+  body:has(#quest:not([hidden])) #toast { left: calc(max(var(--sp-3), env(safe-area-inset-left, 0px)) + 308px); right: auto; margin-inline: 0; width: fit-content; max-width: min(280px, calc(100vw - 520px)); }
   #modo-salir { top: calc(env(safe-area-inset-top, 0px) + 92px) !important; }
   /* F20 r2: en los minijuegos del mundo, la barra del juego, su panel final y sus pistas tapaban «Diario» y «Gestos» (se veía «iario 0/13»).
      Mientras dura el minijuego no hacen falta: se quedan Pausa y los controles. */

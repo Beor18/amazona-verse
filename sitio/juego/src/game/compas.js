@@ -147,7 +147,7 @@ window.AVCompas = function (G) {
     if (n.tipo === 'doble') E.dobles++;
     E.hop = Math.min(1.6, E.hop + (perf ? 1 : 0.6)); E.sq = 1; E.plano = 0; E.flash = 1; E.flashC = n.tipo === 'doble' ? 1 : perf ? 2 : 0;
     sonar('aleteo_sint', perf ? 18 : 10);
-    if (perf) { chispas(lay.vx, lay.laneY, 10, n.tipo === 'doble' ? 1 : 2, 1.2); estela(); } else chispas(lay.vx, lay.laneY, 5, 0, 0.8);
+    if (perf) { chispas(lay.vx, lay.laneY, 10, n.tipo === 'doble' ? 1 : 2, 1.2); estela(); sonar('nido_chispa'); } else chispas(lay.vx, lay.laneY, 5, 0, 0.8);
     if (!racha()) aviso(perf ? L('¡Perfecto!', 'Perfect!') : L('¡Bien!', 'Good!'), perf ? 'perf' : 'bien');
     pintarHud();
   }
@@ -210,7 +210,7 @@ window.AVCompas = function (G) {
       const f = FRASE_CAPA[cv]; if (f && cv > E.capaAnt) setTimeout(() => { if (E.fase === 'juego') aviso(L(f[0], f[1]), 'capa'); }, 450);
       if (cv === 1 && !E.vistoS) { E.vistoS = true; pista(L('Hoja blanca: ¡no toques!', 'White leaf: don’t tap!')); }
     }
-    if (!E.vistoD && hayDorada(t)) { E.vistoD = true; pista(L('Hoja dorada: sube más, si te atreves', 'Golden leaf: climb higher, if you dare')); }
+    if (!E.vistoD && hayDorada(t)) { E.vistoD = true; pista(L('Hoja dorada: sube más', 'Golden leaf: climb higher')); }
     // cuenta 3, 2, 1, ¡ya!
     const b0 = E.bCuenta;
     const k = t >= E.tCuenta && t < E.tCuenta + 4 * b0 ? Math.floor((t - E.tCuenta) / b0) : -1;
@@ -387,7 +387,7 @@ window.AVCompas = function (G) {
     st.textContent = '#compas{position:fixed;inset:0;z-index:80;font-family:Fredoka,system-ui,sans-serif;color:#fff8e6;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden;background:#0d3526}#compas[hidden],#compas [hidden]{display:none!important}' +
       '#compas canvas{position:absolute;inset:0;width:100%;height:100%;display:block}' +
       '#compas .cp-hud{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 10px);display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);box-sizing:border-box;padding:6px 8px 6px 14px;border-radius:22px;background:rgba(16,36,28,.82);font-weight:600;font-size:15px;box-shadow:0 4px 14px rgba(0,0,0,.35)}' +
-      '@media (max-width:599px),(max-height:500px){#compas .cp-hud{flex-wrap:nowrap;gap:10px;padding-left:12px}#compas .cp-alt{font-size:17px!important;white-space:nowrap}#compas .cp-racha{white-space:nowrap}#compas .cp-rec{display:none}}' +
+      '@media (max-width:599px),(max-height:500px){#compas .cp-hud{flex-wrap:nowrap;gap:10px;padding-left:12px}#compas .cp-alt{font-size:17px!important;white-space:nowrap}#compas .cp-racha{white-space:nowrap}#compas .cp-rec{display:none}#compas .cp-pista{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 70px);font-size:15px;max-width:calc(100vw - 32px)}}' +
       '#compas .cp-alt{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}#compas .cp-racha{font-variant-numeric:tabular-nums}#compas .cp-rec{opacity:.85;font-size:14px}' +
       '#compas button{min-height:44px;min-width:44px;padding:4px 16px;border-radius:22px;border:0;font:700 16px Fredoka,system-ui,sans-serif;background:#fff3d6;color:#3b2a14;box-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer;touch-action:manipulation}#compas button.salir{background:#ffd0c4}#compas button:focus-visible{outline:4px solid #ffd27a;outline-offset:2px}#compas .cp-fin:focus{outline:none}' +
       '#compas .cp-fb{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;padding:4px 14px;border-radius:999px;font-weight:700;font-size:20px;pointer-events:none;background:rgba(16,36,28,.78)}#compas .cp-fb:empty{display:none}#compas .cp-fb.lado{transform:translate(0,-50%)}#compas .cp-fb.lado.pop{animation:none}' +
@@ -471,7 +471,8 @@ window.AVCompas = function (G) {
     document.body.classList.add('compas-on');
     try { if (G.pausa && G.pausa.set) G.pausa.set('compas', true); } catch (e) { /* sin pausa */ }
     medir(); pintarHud();
-    pista(L('Toca la pantalla (o Espacio) cuando la hoja llegue al círculo', 'Tap the screen (or press Space) when the leaf reaches the circle')); E.pistaT = 6;
+    const tactil = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+    pista(tactil ? L('Toca cuando la hoja llegue al círculo', 'Tap when the leaf reaches the circle') : L('Toca la pantalla (o Espacio) cuando la hoja llegue al círculo', 'Tap the screen (or press Space) when the leaf reaches the circle')); E.pistaT = 6;
     generar(GEN);
     tPrev = 0; if (!raf) raf = requestAnimationFrame(cuadro);
     try { el.focus({ preventScroll: true }); } catch (e) { /* */ }

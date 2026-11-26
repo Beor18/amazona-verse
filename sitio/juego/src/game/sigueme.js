@@ -211,6 +211,7 @@ window.AVSigueme = function (G) {
     } else E.extra++;
     p.on = false; E.n = n + 1; E.filaMax = Math.max(E.filaMax, E.n);
     sonar('semilla', Math.min(12, E.n)); // el silbido sube de tono con la fila
+    try { if (!reducido() && G.fx && G.fx.burst) G.fx.burst(p.x, p.y + 0.4, p.z, 'feathers', 8); } catch (e) { /* sin fx */ }
     if (E.n === 4 || E.n === 7 || E.n === 10) aviso(L(`¡Fila de ${E.n}!`, `Line of ${E.n}!`) + ' ×' + mult(E.n), 'oro');
     else aviso(L('¡Se unió!', 'Joined!'), 'bien');
     camara(); pintarHud();
@@ -355,7 +356,7 @@ window.AVSigueme = function (G) {
       '@media (orientation:landscape) and (max-height:500px){#sig-fin{padding:12px 16px;gap:4px}#sig-fin h2{font-size:21px}#sig-fin .sig-gran{font-size:34px}}' +
       // la historia no se mezcla con el minijuego: fuera el letrero y los avisos de la misión, los bocadillos, la pista de Acción, los contadores
       // de la Patrulla, los combos y el poder (sus avisos esperan: G.menuModos.ocupado() cuenta este juego como actividad en marcha)
-      'body.sigueme-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela){visibility:hidden!important}' +
+      'body.sigueme-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela,#b-diary,#b-emotes,#b-act,#b-dash){visibility:hidden!important}' +
       // con el panel final, tampoco las pistas de vuelo ni el minimapa: solo el resultado
       'body.sigueme-fin :is(#minimapa,#guia-hud,#keyhint,#acts,#stick,#emotes,#tag,#sys,#sys button,#b-diary,#b-emotes,#b-nido,#b-menu,#b-dive,#v18-exp-poder){visibility:hidden!important}';
     document.head.appendChild(st);

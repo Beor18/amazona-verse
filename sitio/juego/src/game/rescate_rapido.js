@@ -297,7 +297,7 @@ window.AVRescateRapido = function (G) {
       return false;
     }
     E.ultAccion = E.t; E.lleva = i; pich[i].estado = 'lleva';
-    pio(); aviso(L('¡Agárrate, pichón! Ahora, al nido', 'Hold on, little one! Now, to the nest'), 'bien');
+    pio(); chispas(pich[i].x, pich[i].y + 0.5, pich[i].z, 'feathers', 10); aviso(L('¡Agárrate, pichón! Ahora, al nido', 'Hold on, little one! Now, to the nest'), 'bien');
     apuntarGuia(); pintarHud();
     return true;
   }
@@ -374,13 +374,14 @@ window.AVRescateRapido = function (G) {
       '#rr-fin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:61;width:min(400px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:18px 18px 16px;border-radius:24px;background:rgba(16,36,28,.93);color:#fff8e6;font-family:Fredoka,system-ui,sans-serif;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;gap:8px}#rr-fin:focus{outline:none}' +
       '#rr-fin h2{margin:0;font-size:26px}#rr-fin .rr-gran{display:flex;align-items:center;gap:8px;font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}#rr-fin .rr-gran svg{width:44px;height:44px;color:#5fce5a}#rr-fin p{margin:0;font-size:17px;font-weight:600}#rr-fin .rr-det{font-size:15px;opacity:.85;font-weight:500}#rr-fin .rr-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}' +
       // en el teléfono, el aviso va debajo del minimapa (si no, con dos líneas pisa su marco)
-      '@media (max-width:600px){#rr-hud [data-k="msg"]{position:fixed;top:calc(var(--mm-top,calc(env(safe-area-inset-top,0px) + 134px)) + var(--mm,96px) + 10px)}}' +
+      '@media (max-width:600px){#rr-hud [data-k="msg"]{position:fixed;left:16px;top:74px;width:calc(100vw - 32px);max-width:none;transform:none}}' +
       // en pantallas anchas, el panel final a un lado: el nido con los pichones se ve en el centro
       '@media (min-width:900px) and (min-height:520px){#rr-fin{left:auto;right:max(24px,calc(50vw - 640px));transform:translateY(-50%)}}' +
-      '@media (orientation:landscape) and (max-height:500px){#rr-hud [data-k="msg"]{position:fixed;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);max-width:min(440px,calc(100vw - 380px))}}' +
+      '@media (orientation:landscape) and (max-height:500px){#rr-hud [data-k="msg"]{position:fixed;left:16px;top:72px;bottom:auto;width:calc(100vw - 88px);max-width:none;transform:none}}' +
       '@media (orientation:landscape) and (max-height:500px){#rr-fin{padding:12px 16px;gap:4px}#rr-fin h2{font-size:21px}#rr-fin .rr-gran{font-size:34px}#rr-fin .rr-gran svg{width:34px;height:34px}}' +
       // la historia no se mezcla con el minijuego (sus avisos esperan: G.menuModos.ocupado() cuenta este juego como actividad en marcha)
-      'body.pichones-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela){visibility:hidden!important}' +
+      'body.pichones-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela,#b-diary,#b-emotes,#b-dash){visibility:hidden!important}' +
+      '@keyframes rr-pop{40%{transform:scale(1.35)}}#rr-hud .rr-p svg.lleva{animation:rr-pop .45s ease-out}@media (prefers-reduced-motion:reduce){#rr-hud .rr-p svg.lleva{animation:none}}' +
       // con la fiesta y el panel, tampoco las pistas de vuelo ni el minimapa: solo el nido y el resultado
       'body.pichones-fin :is(#minimapa,#guia-hud,#keyhint,#acts,#stick,#emotes,#tag,#sys,#sys button,#b-diary,#b-emotes,#b-nido,#b-menu,#v18-exp-poder){visibility:hidden!important}' +
       // el botón Acción lleva el icono de un pichón mientras dice «Recoger» o «Dejar»
@@ -456,7 +457,7 @@ window.AVRescateRapido = function (G) {
     finEl.hidden = true; q(hudEl, 'msg').textContent = '';
     document.body.classList.add('pichones-on'); document.body.classList.remove('pichones-fin'); ponerBajar();
     apuntarGuia(); pintarHud(); pintar(); verHud();
-    aviso(L('¡Tres pichones se bajaron a curiosear! Llévalos al nido antes de que llueva', 'Three chicks hopped down to explore! Take them to the nest before it rains'), 'bien'); E.msgT = 4;
+    aviso(L('Lleva los 3 al nido antes de la lluvia', 'Take the 3 to the nest before the rain'), 'bien'); E.msgT = 4;
     sonar('boton');
     return true;
   }

@@ -369,6 +369,7 @@ window.AVBanquete = function (G) {
     sonar(copa ? 'bq_copa' : 'bq_fruto', J.combo);
     G.fx.burst(fr.x, fr.y, fr.z, copa ? 'gold' : 'petalos', copa ? 20 : 12);
     ctx.aviso('+' + pts + (J.combo >= 2 ? '  ·  combo x' + J.combo : '') + (copa ? '  ·  ¡copas!' : ''));
+    if (ctx.ui && ctx.ui.chipPuntos) { ctx.ui.chipPuntos.classList.remove('rt-salto'); void ctx.ui.chipPuntos.offsetWidth; ctx.ui.chipPuntos.classList.add('rt-salto'); }
     if (!ctx.REDUCED) ctx.efectos.fovExtra += copa ? 4 : 2;
     J.respawn = 0.7;
   }
@@ -454,6 +455,7 @@ window.AVBanquete = function (G) {
       ui.puntos.textContent = '0'; ui.combo.textContent = '';
       for (let i = 0; i < 8; i++) ponerFruto('abajo'); for (let i = 0; i < 8; i++) ponerFruto('copas');
       ctx.st.fase = 'juego';
+      ctx.aviso('¡Recoge los frutos!');
       ctx.sonar('r_cuenta'); ctx.mostrarCuenta('3');
     },
     terminar() { if (J.grupo) J.grupo.visible = false; juego.vaciar(); J.fase = 'nada'; },
