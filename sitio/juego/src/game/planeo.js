@@ -253,7 +253,7 @@ window.AVPlaneo = function (G) {
       if (!n.on) continue;
       const dx = (S.pos.x - n.x) / NUBE_RX, dy = (S.pos.y - n.y) / NUBE_RY, dz = (S.pos.z - n.z) / NUBE_RX, h = dx * dx + dy * dy + dz * dz;
       if (h < hondo) hondo = h;
-      if (!n.usada && h < 1) { n.usada = true; E.nubesN++; E.subeT = NUBE_T; sonar('ring', Math.min(8, E.nubesN)); aviso(L('¡Nube! Más altura', 'Cloud boost!'), 'oro'); pintarNubes(); pintarHud(); }
+      if (!n.usada && h < 1) { n.usada = true; E.nubesN++; E.subeT = NUBE_T; sonar('ring', Math.min(8, E.nubesN)); aviso(L('¡Nube! Más altura', 'Cloud boost!'), 'oro'); try { if (G.fx && G.fx.burst) G.fx.burst(n.x, n.y, n.z, 'feathers', 12); } catch (e) { /* */ } pintarNubes(); pintarHud(); const hw = hudEl && hudEl.querySelector('[data-k="hw"]'); if (hw) { hw.classList.remove('pln-pop'); void hw.offsetWidth; hw.classList.add('pln-pop'); } }
     }
     if (M) { const op = hondo < 1.8 ? 0.5 : 1; if (M.nubes.material.opacity !== op) M.nubes.material.opacity = op; } // dentro de una nube, se aclara (Vittata no desaparece)
     E.hondo = hondo;
@@ -331,10 +331,11 @@ window.AVPlaneo = function (G) {
       // el aviso va bajo la fila de botones de arriba (Diario, Gestos, Nido…); en el teléfono de pie esa fila va al lado, así que sube
       '@media (max-width:600px){#pln-hud [data-k="msg"]{top:calc(100% + 8px)}}' +
       // teléfono de lado: el aviso va abajo, entre el joystick y los botones
-      '@media (orientation:landscape) and (max-height:500px){#pln-hud [data-k="msg"]{position:fixed;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);max-width:min(440px,calc(100vw - 380px))}}' +
+      '@media (orientation:landscape) and (max-height:500px){#pln-hud [data-k="msg"]{position:fixed;left:16px;top:72px;bottom:auto;width:calc(100vw - 88px);max-width:none;transform:none}}' +
       '@media (orientation:landscape) and (max-height:500px){#pln-fin{padding:12px 16px;gap:4px}#pln-fin h2{font-size:21px}#pln-fin .pln-gran{font-size:34px}#pln-fin .pln-gran svg{width:34px;height:34px}}' +
       // la historia no se mezcla con el minijuego (sus avisos esperan: G.menuModos.ocupado() cuenta este juego como actividad en marcha)
-      'body.planeo-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela){visibility:hidden!important}' +
+      'body.planeo-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela,#b-diary,#b-emotes){visibility:hidden!important}' +
+      '@keyframes pln-pop{40%{transform:scale(1.28)}}#pln-hud .pln-h.pln-pop{animation:pln-pop .4s ease-out}@media (prefers-reduced-motion:reduce){#pln-hud .pln-h.pln-pop{animation:none}}' +
       // aquí no hay subir, impulso, aterrizar (ni su pastilla «Dejar de volar») ni Acción: solo el joystick y «Bajar» (picada)
       'body.planeo-on :is(#b-act,#b-jump,#b-dash,#b-fly,#guia-volando){visibility:hidden!important}' +
       // «Bajar» (la picada) sí se ve en el teléfono: fuera del agua input.js lo deja hidden, aquí se muestra (como en retos.js)
@@ -422,7 +423,7 @@ window.AVPlaneo = function (G) {
     finEl.hidden = true; q(hudEl, 'msg').textContent = '';
     document.body.classList.add('planeo-on'); document.body.classList.remove('planeo-fin'); ponerControles();
     apuntarGuia(); pintarHud(); verHud();
-    aviso(L('Planea lejos: las nubes y las corrientes que suben te dan altura', 'Glide far: clouds and updrafts give you height'), 'bien'); E.msgT = 4; E.ayuda = true; // luego, cómo se dirige y cómo se pica
+    aviso(L('Las nubes te suben', 'Clouds lift you'), 'bien'); E.msgT = 4; E.ayuda = true; // luego, cómo se dirige y cómo se pica
     sonar('boton');
     return true;
   }

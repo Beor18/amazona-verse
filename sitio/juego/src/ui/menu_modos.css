@@ -177,3 +177,10 @@ html body:is(.retos-on, .flight-on, .river-on, .maze-on, .tren-on) #pause .pause
 #card .v18-evo-bar b { display: block; height: 100%; background: #e0a526; }
 #card .v18-evo-et { display: inline-block; font-size: calc(12px * var(--fs-k, 1)); padding: 2px 7px; border-radius: 9px; background: #ffe39a; color: #3b2a14; margin: 2px 1px; }
 #card .v18-evo-et.no { background: #0003; color: inherit; }
+/* 390×844: 9 tarjetas quedan bajo el pliegue y la flecha solo existía en horizontal */
+@media (max-width: 560px) and (orientation: portrait) {
+  #title:has(#modos) .title-main { -webkit-mask-image: linear-gradient(#000 0 88%, transparent); mask-image: linear-gradient(#000 0 88%, transparent); }
+  #title:has(#modos)::after { content: "↓"; position: absolute; left: 0; right: 0; bottom: 2px; z-index: 4; text-align: center; color: #ffd27a; font: 800 22px/1 system-ui, sans-serif; pointer-events: none; text-shadow: 0 2px 0 #3b2a14; animation: bob 1.2s ease-in-out infinite; }
+  .modo { min-height: 96px; padding: 8px 6px; }
+  .modo small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+}
