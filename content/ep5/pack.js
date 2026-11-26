@@ -663,6 +663,8 @@
           if (!G.eventos.had('RelayBuilt')) { G.eventos.log('RelayBuilt'); G.comic.capture('relevo'); }
         }
         G.audio.play('pickup'); G.misiones.check(); pintar();
+        // La noche se queda como está: solo unas estrellas al plantar la estación (sfx y partículas que ya existen).
+        if (G.fx && G.fx.burst) G.fx.burst(est.x, (G.terreno ? G.terreno.height(est.x, est.z) : 0) + 1.8, est.z, 'stars', 12);
         G.ui.toast(aDonde(), 3000);
         return true;
       }
