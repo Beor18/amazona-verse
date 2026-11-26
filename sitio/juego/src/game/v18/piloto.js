@@ -150,17 +150,31 @@ window.AVV18Piloto = function (G) {
     prepararMarcas(); pintarHud();
     return true;
   }
+  const miraEsc = { x: 0, z: 1 };
+  let ibaVolando = false;
+  // En el suelo, Vittata mira la marca: si se gira hacia la cámara, la nube queda a la espalda.
+  function mirarMarca() {
+    if (!F.modo || F.res) return;
+    const M = G.fisica && G.fisica.MOVE;
+    if (M && (M.flying || Math.hypot(M.vx || 0, M.vz || 0) > 0.35)) return;
+    const m = F.marcas[F.paso]; if (!m) return;
+    const dx = m.x - S.pos.x, dz = m.z - S.pos.z, n = Math.hypot(dx, dz) || 1;
+    miraEsc.x = dx / n; miraEsc.z = dz / n; S.facing = miraEsc;
+  }
   // Abre la escuela (desde «Más juegos», «¿Qué hay para hacer?» o la API). Empieza por la primera lección sin estrella.
   function jugar(o) {
     if (!encendido()) return false;
     o = o || {};
     F.modo = true; F.toques = 0;
+    document.body.classList.add('piloto-on'); // antes de llevar: el «Descubriste» no tapa la lección ni Salir
     const lugar = sitio().inicio;
     if (o.llevar !== false && lugar && G.menuModos && G.menuModos.llevar) { try { G.menuModos.llevar(lugar.x, lugar.z, lugar.x + lugar.fx * 10, lugar.z + lugar.fz * 10); } catch (e) { /* sin menú */ } }
     hud().hidden = false; document.body.classList.add('piloto-on');
     try { if (G.menuModos && G.menuModos.encuadrar) G.menuModos.encuadrar(); } catch (e) { /* sin menú */ } // F20 r2: la cámara no sale metida en la ladera
     const sin = LEC.findIndex(l => !(D.mejor[l.id] > 0));
     leccion(o.leccion != null ? o.leccion : sin < 0 ? 0 : sin);
+    ibaVolando = !!(G.fisica && G.fisica.MOVE && G.fisica.MOVE.flying);
+    mirarMarca();
     return true;
   }
   const empezar = o => jugar(o); // nombre de antes (que_hacer.js, QA-246)
@@ -204,6 +218,8 @@ window.AVV18Piloto = function (G) {
     }
     if (!G.quiet) {
       try { G.audio.play('pickup', 2); } catch (e) { /* sin audio */ }
+      try { G.audio.play('logro'); } catch (e) { /* sin audio */ }
+      try { if (G.fx && G.fx.burst) G.fx.burst(S.pos.x, S.pos.y + 1.2, S.pos.z, 'stars', 14); } catch (e) { /* sin efectos */ }
       try { if (G.actores && G.actores.playEmote && !M.flying) G.actores.playEmote('celebrar'); } catch (e) { /* sin gesto */ }
     }
     pintarHud();
@@ -218,6 +234,13 @@ window.AVV18Piloto = function (G) {
       return;
     }
     F.t += dt;
+    mirarMarca();
+    const fly = !!(G.fisica && G.fisica.MOVE && G.fisica.MOVE.flying);
+    if (fly && !ibaVolando && !G.quiet) {
+      try { G.audio.play('aleteo'); } catch (e) { /* sin audio */ }
+      try { if (G.fx && G.fx.burst) G.fx.burst(S.pos.x, S.pos.y + 0.3, S.pos.z, 'feathers', 8); } catch (e) { /* sin efectos */ }
+    }
+    ibaVolando = fly;
     const m = F.marcas[F.paso];
     if (m && llegar(m)) {
       if (!G.quiet) { try { G.fx.burst(m.x, m.y, m.z, m.tipo === 'nube' ? 'stars' : 'gold', 10); } catch (e) { /* sin fx */ } try { G.audio.play(m.tipo === 'nube' ? 'aviso' : 'tick'); } catch (e) { /* sin audio */ } }
@@ -251,7 +274,7 @@ window.AVV18Piloto = function (G) {
       '#pil-hud button.pil-l{padding:0;width:44px}#pil-hud button.pil-l.hecha{background:#ffe27a}#pil-hud button.pil-l[aria-current="true"]{outline:3px solid #7fd25a;outline-offset:1px}' +
       '#pil-hud button.pil-salir{background:#ffd0c4;padding:4px 16px}#pil-hud button:focus-visible{outline:3px solid #fff;outline-offset:2px}' +
       '#pil-bajar{position:fixed;z-index:8;width:64px;height:64px;border-radius:50%;border:0;background:rgba(255,243,214,.92);color:#3b2a14;font:700 14px Fredoka,system-ui,sans-serif;box-shadow:0 3px 10px rgba(0,0,0,.3);touch-action:none;user-select:none;-webkit-user-select:none}#pil-bajar[hidden]{display:none}#pil-bajar.on{background:#ffe27a}' +
-      'body.piloto-on :is(#quest,#inv,#inv-cuenta,#modo-salir,#b-construir,#toast,#prompt,#minimapa,#v18-exp-poder,#v18-extra,#rio-visor){visibility:hidden!important}' +
+      'body.piloto-on :is(#quest,#inv,#inv-cuenta,#modo-salir,#b-construir,#toast,#prompt,#minimapa,#v18-exp-poder,#v18-extra,#rio-visor,#fx-descubre,#rotulo-lugar){visibility:hidden!important}' +
       '@media (max-width:560px){#pil-hud{left:max(12px,env(safe-area-inset-left,0px));transform:none;width:min(560px,calc(100vw - 84px))}}'; // 390×844: la columna de Diario y Pausa no tapa «Salir»
     document.head.appendChild(st);
     hudEl = document.createElement('div'); hudEl.id = 'pil-hud'; hudEl.hidden = true; hudEl.setAttribute('role', 'region');

@@ -190,7 +190,9 @@ window.AVSembradora = function (G) {
     M.diana.visible = apunta; M.arco.visible = apunta;
     if (apunta) {
       normal(P.lx, P.lz, nTmp);
-      dummy.position.set(P.lx, P.ly + 0.09, P.lz); inclinar(nTmp.nx, nTmp.ny, nTmp.nz); dummy.scale.setScalar(1.55); dummy.updateMatrix();
+      dummy.position.set(P.lx, P.ly + 0.09, P.lz); inclinar(nTmp.nx, nTmp.ny, nTmp.nz);
+      const pulso = P.zona === 2 && !reducido() ? 1.55 * (1 + 0.14 * Math.sin(E.t * 8)) : 1.55; // en el centro el aro late: es el momento de soltar
+      dummy.scale.setScalar(pulso); dummy.updateMatrix();
       M.diana.matrix.copy(dummy.matrix); M.diana.matrixAutoUpdate = false; M.diana.matrixWorldNeedsUpdate = true;
       M.diana.material.color.setHex(P.zona === 2 ? 0xffd23f : P.zona === 1 ? 0x9df07a : 0xffffff);
       const a = M.arco.geometry.attributes.position, arr = a.array;
@@ -376,11 +378,11 @@ window.AVSembradora = function (G) {
     if (E.fase !== 'juego') return false;
     if (E.t - E.ultSoltar < ESPERA) return false;
     if (E.semillas <= 0) { // aviso importante: también suena (no a cada toque)
-      if (E.t - E.sinT > 1.5) { E.sinT = E.t; sonar('aviso'); aviso(L('Sin semillas: pasa por el saco', 'Out of seeds: fly over the sack'), 'malo'); }
+      if (E.t - E.sinT > 1.5) { E.sinT = E.t; sonar('aviso'); avisoL('Sin semillas: pasa por el saco', 'Out of seeds: fly over the sack', 'malo'); }
       return false;
     }
     predecir(P);
-    if (P.alto < ALTO_MIN) { if (E.t - E.sinT > 1.2) { E.sinT = E.t; aviso(L('Vuela más alto para soltar', 'Fly higher to drop'), 'malo'); } return false; }
+    if (P.alto < ALTO_MIN) { if (E.t - E.sinT > 1.2) { E.sinT = E.t; avisoL('Vuela más alto para soltar', 'Fly higher to drop', 'malo'); } return false; }
     let s = null; for (const v of vuelo) if (!v.on) { s = v; break; }
     if (!s) return false;
     const m = MV();
@@ -388,7 +390,7 @@ window.AVSembradora = function (G) {
     s.vel = Math.hypot(m.vx || 0, m.vz || 0);
     E.semillas--; E.ultSoltar = E.t;
     sonar('lanzar');
-    if (E.semillas === 0) { E.sinT = E.t; aviso(L('Sin semillas: pasa por el saco', 'Out of seeds: fly over the sack'), 'malo'); sonar('aviso'); }
+    if (E.semillas === 0) { E.sinT = E.t; avisoL('Sin semillas: pasa por el saco', 'Out of seeds: fly over the sack', 'malo'); sonar('aviso'); }
     pintarHud();
     return true;
   }
@@ -403,7 +405,7 @@ window.AVSembradora = function (G) {
     const z = zonaEn(s.lx, s.lz), p = z.p;
     if (!p) { // fuera: rebota y se pierde; solo se va la racha
       s.rebote = 0.7; E.racha = 0; E.fallos++;
-      sonar('frenada'); aviso(L('Rebotó fuera', 'Bounced away'), 'malo');
+      sonar('frenada'); avisoL('Rebotó fuera', 'Bounced away', 'malo');
       pintarHud(); return;
     }
     s.on = false;
@@ -414,10 +416,11 @@ window.AVSembradora = function (G) {
     const tam = TAM[Math.min(2, (centro ? 0 : 1) + (p.seco && p.r < p.r0 * 0.75 ? 1 : 0))];
     plantar(s.lx, H(s.lx, s.lz), s.lz, tam);
     hojas(s.lx, s.ly + 1.2, s.lz, centro ? 18 : 10);
-    sonar('semilla', Math.min(12, E.racha)); if (centro) sonar('encaje');
+    sonar('semilla', Math.min(12, E.racha)); if (centro) { sonar('encaje'); sonar('nido_chispa'); }
     p.on = false; nuevoParche(p);
-    if (mu > 1 && (E.racha === 3 || E.racha === 6)) { aviso(L(`¡Racha ×${mu}!`, `Streak ×${mu}!`) + ' +' + pts, 'oro'); sonar('ring', mu); }
-    else aviso((centro ? L('¡En el centro!', 'Bullseye!') : L('¡Brotó!', 'It sprouted!')) + ' +' + pts, centro ? 'oro' : 'bien');
+    if (mu > 1 && (E.racha === 3 || E.racha === 6)) { avisoL('¡Racha ×' + mu + '! +' + pts, 'Streak ×' + mu + '! +' + pts, 'oro'); sonar('ring', mu); }
+    else if (centro) avisoL('¡En el centro! +' + pts, 'Bullseye! +' + pts, 'oro');
+    else avisoL('¡Brotó! +' + pts, 'It sprouted! +' + pts, 'bien');
     pintarHud();
   }
 
@@ -427,14 +430,22 @@ window.AVSembradora = function (G) {
     if (E.fase === 'vista') { E.vistaT -= dt; for (const a of arboles) if (a.on) a.t += dt; pintar(); if (E.vistaT <= 0) mostrarFin(); return; }
     if (E.fase !== 'juego') return;
     E.t += dt;
+    { // Aterrizar deja al niño en el suelo y ya no puede soltar. El botón se esconde; si aun así toca suelo, vuelve al aire.
+      const Mv = MV();
+      if (Mv && Mv.flying === false && (Mv.grounded || Mv.landing)) {
+        Mv.flying = true; Mv.landing = false; Mv.grounded = false; Mv.takeoff = 0;
+        if (S.vy < 3) S.vy = 4;
+        if (!E.aire) { E.aire = 1; avisoL('Sigue en el aire para soltar', 'Stay in the air to drop', 'bien'); }
+      }
+    }
     if (E.fijoT > 0) E.fijoT -= dt;
-    if (E.msgT > 0 && (E.msgT -= dt) <= 0 && hudEl) { const m = q(hudEl, 'msg'); if (E.colaTxt) { m.textContent = E.colaTxt; m.className = E.colaCls; E.colaTxt = ''; E.msgT = 1.6; } else { m.textContent = ''; m.className = ''; } }
+    if (E.msgT > 0 && (E.msgT -= dt) <= 0 && hudEl) { const m = q(hudEl, 'msg'); if (E.colaTxt) { m.textContent = E.colaTxt; m.className = E.colaCls; msgPar = E.colaPar || null; E.colaTxt = ''; E.colaPar = null; E.msgT = 1.6; } else { m.textContent = ''; m.className = ''; msgPar = null; } }
     // un parche que no encontró sitio se reintenta cada 0,5 s (nunca cae en el agua ni bajo una copa)
     if ((E.reT -= dt) <= 0) { E.reT = 0.5; for (const p of parches) if (!p.on) nuevoParche(p); }
     // viento lateral desde los 30 s: gira despacio; la sombra lo incluye
     if (etapa() >= 1) {
       if (!E.vientoOn) {
-        E.vientoOn = true; E.vientoA = rnd(0, Math.PI * 2); sonar('aviso'); aviso(L('¡Viento! La sombra se mueve con él', 'Wind! The shadow drifts with it'), 'malo'); E.msgT = 2.4; E.fijoT = 2.4; // no lo pisa el siguiente aviso: ese espera
+        E.vientoOn = true; E.vientoA = rnd(0, Math.PI * 2); sonar('aviso'); avisoL('¡Viento! La sombra se mueve con él', 'Wind! The shadow drifts with it', 'malo'); E.msgT = 2.4; E.fijoT = 2.4; // no lo pisa el siguiente aviso: ese espera
         hojas(S.pos.x + Math.cos(E.vientoA) * 3, S.pos.y + 1.5, S.pos.z + Math.sin(E.vientoA) * 3, 16);
       }
       E.vientoA += dt * 0.12; E.vientoX = Math.cos(E.vientoA) * VIENTO; E.vientoZ = Math.sin(E.vientoA) * VIENTO;
@@ -455,7 +466,7 @@ window.AVSembradora = function (G) {
     for (const a of arboles) if (a.on) a.t += dt;
     // el saco recarga: pasar por encima basta, hasta SACO_ALTO m (en el táctil, volando no se baja poco a poco)
     const dS = Math.hypot(S.pos.x - saco.x, S.pos.z - saco.z);
-    if (E.semillas < LLEVA && dS < SACO_R && S.pos.y - saco.y < SACO_ALTO) { E.semillas = LLEVA; sonar('pieza'); aviso(L('¡Semillas listas!', 'Seeds ready!'), 'bien'); pintarHud(); }
+    if (E.semillas < LLEVA && dS < SACO_R && S.pos.y - saco.y < SACO_ALTO) { E.semillas = LLEVA; sonar('pieza'); avisoL('¡Semillas listas!', 'Seeds ready!', 'bien'); pintarHud(); }
     // guía: el saco sin semillas; si no, el parche más cercano
     apuntarGuia();
     const r = restante();
@@ -551,7 +562,7 @@ window.AVSembradora = function (G) {
       '@media (orientation:landscape) and (max-height:500px){#sdc-hud [data-k="msg"]{position:fixed;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);max-width:min(440px,calc(100vw - 380px))}}' +
       '@media (orientation:landscape) and (max-height:500px){#sdc-fin{padding:12px 16px;gap:4px}#sdc-fin h2{font-size:21px}#sdc-fin .sdc-gran{font-size:34px}#sdc-fin .sdc-gran svg{width:34px;height:34px}#sdc-fin .sdc-dato{font-size:13px;padding:4px 8px}}' +
       // la historia no se mezcla con el minijuego (sus avisos esperan: G.menuModos.ocupado() cuenta este juego como actividad en marcha)
-      'body.sembradora-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela){visibility:hidden!important}' +
+      'body.sembradora-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela,#b-diary,#b-emotes,#b-fly){visibility:hidden!important}' +
       // con la vista final y el panel, tampoco las pistas de vuelo ni el minimapa: solo el claro y el resultado
       'body.sembradora-fin :is(#minimapa,#guia-hud,#keyhint,#acts,#stick,#emotes,#tag,#sys,#sys button,#b-diary,#b-emotes,#b-nido,#b-menu,#v18-exp-poder){visibility:hidden!important}' +
       // el botón Acción lleva el icono de una semilla mientras dice «Soltar»
@@ -585,12 +596,16 @@ window.AVSembradora = function (G) {
     q(hudEl, 'x').textContent = E.racha >= 3 ? '×' + mult(E.racha) : '';
     const rq = q(hudEl, 'rec'); rq.textContent = E.mejorArb ? (ancho() ? L('Récord ', 'Best ') : '★') + E.mejorArb : ''; rq.setAttribute('aria-label', L('Récord de árboles: ', 'Tree record: ') + E.mejorArb); // en árboles, como el panel (también en el teléfono)
     hudEl.querySelector('[data-a="salir"]').textContent = L('Salir', 'Exit');
+    if (msgPar) { const m = q(hudEl, 'msg'), t = L(msgPar.es, msgPar.en); if (m.textContent !== t) m.textContent = t; }
   }
-  function aviso(txt, cls) {
+  let msgPar = null;
+  function aviso(txt, cls, par) {
     if (!hudEl) return;
-    if (E.fijoT > 0) { E.colaTxt = txt; E.colaCls = cls || ''; return; } // el aviso del viento se lee entero; este sale después
+    if (E.fijoT > 0) { E.colaTxt = txt; E.colaCls = cls || ''; E.colaPar = par || null; return; } // el aviso del viento se lee entero; este sale después
+    msgPar = par || null;
     const m = q(hudEl, 'msg'); m.textContent = txt; m.className = cls || ''; E.msgT = 1.6;
   }
+  function avisoL(es, eng, cls) { aviso(L(es, eng), cls, { es, en: eng }); }
   function pintarFin() {
     if (!finEl) return;
     const n = E.puntos, a = E.arboles;
@@ -615,7 +630,8 @@ window.AVSembradora = function (G) {
     Object.assign(E, { fase: 'juego', t: 0, puntos: 0, arboles: 0, semillas: LLEVA, racha: 0, mejorRacha: 0, centros: 0, rapidas: 0, fallos: 0, ultSoltar: -9, sinT: -9,
       vientoX: 0, vientoZ: 0, vientoA: 0, vientoOn: false, msgT: 0, avisos: 0, vistaT: 0, finP: 0, nuevo: false, datoAhora: false,
       mejor: rec ? rec.mejor : 0, mejorArb: rec ? ent(rec.arboles) : 0, mejorRachaRec: rec ? ent(rec.racha) : 0, jugadas: rec ? ent(rec.jugadas) : 0, datoVisto: !!(rec && rec.dato) });
-    Object.assign(E, { reT: 0.5, fijoT: 0, colaTxt: '', colaCls: '' });
+    Object.assign(E, { reT: 0.5, fijoT: 0, colaTxt: '', colaCls: '', colaPar: null, aire: 0 });
+    msgPar = null;
     try { if (G.pausa && G.pausa.set) G.pausa.set('sembradora', false); } catch (e) { /* sin pausa */ }
     if (G.interaccion && G.interaccion.modo !== MODO) { modo0 = G.interaccion.modo; G.interaccion.modo = MODO; }
     // el saco, en el centro de un claro que ya existe (siempre el mismo); los parches, alrededor; Vittata, en el aire junto al saco
@@ -626,7 +642,7 @@ window.AVSembradora = function (G) {
     finEl.hidden = true; q(hudEl, 'msg').textContent = '';
     document.body.classList.add('sembradora-on'); document.body.classList.remove('sembradora-fin');
     apuntarGuia(); predecir(P); pintarHud(); pintar(); verHud();
-    aviso(L('Vuela sobre la tierra oscura y suelta una semilla cuando la sombra la pise', 'Fly over the dark soil and drop a seed when the shadow is on it'), 'bien'); E.msgT = 4;
+    avisoL('Vuela sobre la tierra oscura y suelta una semilla cuando el aro blanco la pise', 'Fly over the dark soil and drop a seed when the white ring is on it', 'bien'); E.msgT = 4;
     sonar('boton');
     return true;
   }

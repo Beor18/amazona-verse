@@ -46,7 +46,8 @@
       s.textContent = '#ar-casa{border:0;padding:0;background:transparent;max-width:calc(100vw - 24px)}#ar-casa::backdrop{background:rgba(6,16,12,.55)}' +
         '#ar-casa .ar-caja{width:min(420px,calc(100vw - 32px));padding:22px;border-radius:22px;background:#132b21;color:#f4f7f1;border:2px solid rgba(127,211,143,.45);display:grid;gap:12px;box-shadow:0 18px 50px rgba(0,0,0,.45)}' +
         '#ar-casa h2{margin:0;font:700 1.45rem/1.2 system-ui,sans-serif}#ar-casa p{margin:0;line-height:1.4;font:500 1.05rem/1.4 system-ui,sans-serif}' +
-        '#ar-casa .ar-aviso{font-weight:700;color:#ffd27a}#ar-casa .ar-fila{display:flex;flex-wrap:wrap;gap:8px}' +
+        '#ar-casa .ar-aviso{font-weight:700;color:#ffd27a}#ar-casa .ar-fila{display:flex;flex-direction:column;gap:8px}' +
+        '#ar-casa button,#ar-casa a[rel="ar"]{width:100%;box-sizing:border-box;white-space:normal;text-align:center}' +
         '#ar-casa button{min-height:44px;padding:10px 16px;border-radius:999px;border:0;font:700 1rem/1.2 system-ui,sans-serif;cursor:pointer}' +
         '#ar-casa [data-ar="entrar"]{background:#f0a202;color:#1a1204}#ar-casa [data-ar="seguir"],#ar-casa [data-ar="ok"]{background:transparent;color:#f4f7f1;border:2px solid rgba(244,247,241,.45)}' +
         '#ar-casa a[rel="ar"]{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 16px 8px 8px;border-radius:999px;background:#1c6e8c;color:#fff;text-decoration:none;font:700 1rem/1.2 system-ui,sans-serif}#ar-casa a[rel="ar"] img{width:36px;height:36px;border-radius:8px;object-fit:cover}' +
@@ -59,6 +60,26 @@
       document.head.appendChild(s);
     }
 
+    function ponerTexto(sel, texto) { const e = dlg && dlg.querySelector(sel); if (e) e.textContent = texto; }
+    function repintar() {
+      if (!dlg) return;
+      ponerTexto('#ar-t', L('Vittata en tu casa', 'Vittata in your home'));
+      ponerTexto('.ar-aviso', L('Pide a un adulto que te acompañe · mira a tu alrededor', 'Ask a grown-up to stay with you · look around you'));
+      ponerTexto('[data-ar="priv"]', L('La cámara no se guarda ni se envía. No usamos dónde estás.', 'The camera is not saved or sent. We do not use where you are.'));
+      ponerTexto('[data-ar="entrar"]', L('Ver a Vittata aquí', 'See Vittata here'));
+      ponerTexto('[data-ar="casa"]', L('Ver en tu casa', 'See her at home'));
+      ponerTexto('[data-ar="seguir"]', L('Seguir en el juego', 'Keep playing'));
+    }
+    function trasIdioma() { setTimeout(repintar, 0); }
+    try {
+      G.on('aula', k => { if (k === 'idioma') trasIdioma(); });
+      if (G.idioma && G.idioma.poner && !G.idioma.poner._ar) {
+        const orig = G.idioma.poner.bind(G.idioma);
+        const puesta = l => { const p = orig(l); if (p && p.then) p.then(trasIdioma, trasIdioma); else trasIdioma(); return p; };
+        puesta._ar = 1;
+        G.idioma.poner = puesta;
+      }
+    } catch (e) { /* sin idioma */ }
     function quitarAviso() {
       if (dlg) { try { if (dlg.open) dlg.close(); } catch (e) { /* ya cerrado */ } dlg.remove(); dlg = null; }
     }
@@ -66,14 +87,14 @@
     function aviso() {
       estilo();
       if (dlg && document.contains(dlg)) return dlg;
-      dlg = document.createElement('dialog'); dlg.id = 'ar-casa'; dlg.setAttribute('aria-labelledby', 'ar-t');
-      dlg.innerHTML = '<div class="ar-caja"><h2 id="ar-t">' + L('Vittata en tu casa', 'Vittata in your home') + '</h2>' +
-        '<p class="ar-aviso">' + L('Pide a un adulto que te acompañe · mira a tu alrededor', 'Ask a grown-up to stay with you · look around you') + '</p>' +
-        '<p>' + L('La cámara no se guarda ni se envía. No usamos dónde estás.', 'The camera is not saved or sent. We do not use where you are.') + '</p>' +
-        '<div class="ar-fila"><button type="button" data-ar="entrar">' + L('Ver a Vittata aquí', 'See Vittata here') + '</button>' +
-        '<a rel="ar" href="assets/ar/vittata.usdz"><img alt="" src="assets/ar/vittata_poster.jpg">' + L('Ver en tu casa', 'See her at home') + '</a>' +
-        '<button type="button" data-ar="seguir">' + L('Seguir en el juego', 'Keep playing') + '</button></div>' +
+      dlg = document.createElement('dialog'); dlg.id = 'ar-casa'; dlg.setAttribute('data-no-tr', ''); dlg.setAttribute('aria-labelledby', 'ar-t');
+      dlg.innerHTML = '<div class="ar-caja"><h2 id="ar-t"></h2>' +
+        '<p class="ar-aviso"></p><p data-ar="priv"></p>' +
+        '<div class="ar-fila"><button type="button" data-ar="entrar"></button>' +
+        '<a rel="ar" href="assets/ar/vittata.usdz"><img alt="" src="assets/ar/vittata_poster.jpg"><span data-ar="casa"></span></a>' +
+        '<button type="button" data-ar="seguir"></button></div>' +
         '<p data-ar="msg" hidden></p></div>';
+      repintar();
       dlg.addEventListener('click', e => {
         const b = e.target.closest('button'); if (!b) return;
         if (b.dataset.ar === 'seguir' || b.dataset.ar === 'ok') quitarAviso();
@@ -306,6 +327,7 @@
       if (!bandera()) return null;
       const d = aviso();
       try { if (!d.open) d.showModal(); } catch (e) { /* sin diálogo: se queda en el documento */ }
+      try { if (G.audio && !G.quiet) G.audio.play('aleteo'); } catch (e) { /* sin sonido */ }
       return d;
     }
 
@@ -350,6 +372,14 @@
         const msg = await entrar(null);
         check('Sin soporte: un mensaje amable y se vuelve al juego', /Seguimos en el juego/.test(msg) && !document.getElementById('ar-overlay'), msg);
         check('Sin soporte no guarda la cámara', !localStorage.getItem('amazonaverse.ar') && !localStorage.getItem('amazonaverse.ar.foto'));
+        check('El aviso no lo parte el diccionario', d.getAttribute('data-no-tr') === '');
+        if (G.idioma && G.idioma.poner) {
+          const idi = G.idioma.actual ? G.idioma.actual() : 'es';
+          await G.idioma.poner('en'); repintar();
+          const enTxt = d.textContent || '';
+          check('En inglés el aviso está entero', enTxt.indexOf('Ask a grown-up to stay with you') >= 0 && enTxt.indexOf('See Vittata here') >= 0 && enTxt.indexOf('See her at home') >= 0 && !/Continue en|un adult /.test(enTxt), enTxt.slice(0, 160));
+          await G.idioma.poner(idi || 'es'); repintar();
+        }
         const seguir = d.querySelector('[data-ar="seguir"]'); if (seguir) seguir.click();
         check('Cerrar el aviso lo quita', !$('ar-casa'));
         check('Hay botón Salir en la capa de la sesión', /id="ar-salir"/.test(sesionAR.toString()) && sesionAR.toString().indexOf('Salir') >= 0);

@@ -277,7 +277,18 @@
     },
 
     continuidad, // D11: líneas que dependen de lo elegido en capítulos anteriores ([] sin dato)
-    inicio(G) { G.eventos.log('BridgeIdea'); G.dialogo.say(G.dialogo.L('inicio:ep4').concat(continuidad()), () => G.ui.toast('Habla con Iguaca', 3000)); },
+    inicio(G) {
+      G.eventos.log('BridgeIdea');
+      const mirar = p => {
+        if (G.quiet || !p || !G.camara || !G.S) return;
+        const dx = p.x - G.S.pos.x, dz = p.z - G.S.pos.z, n = Math.hypot(dx, dz) || 1;
+        if (G.S.facing) { G.S.facing.x = dx / n; G.S.facing.z = dz / n; }
+        G.camara.yaw = Math.atan2(-dx, -dz);
+        try { G.camara.manual(); G.camara.place(true); } catch (e) { /* sin cámara */ }
+      };
+      mirar(LUMA);
+      G.dialogo.say(G.dialogo.L('inicio:ep4').concat(continuidad()), () => { mirar(LUMA); G.ui.toast('Habla con Iguaca', 3000); });
+    },
 
     preparar(G) {
       const S = G.S, H = G.terreno.height, L = G.dialogo.L, scene = G.renderer.scene;
@@ -372,7 +383,12 @@
         const poste = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 2.2, 6), mat('#8a6a3a'));
         poste.position.set(x, y + 1.1, t.z); scene.add(poste);
         const cinta = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.3), new THREE.MeshLambertMaterial({ color: '#2f8fd6', side: THREE.DoubleSide }));
-        cinta.position.set(x + 0.5, y + 2, t.z); scene.add(cinta);
+        cinta.position.set(x + 0.5, y + 2, t.z); cinta.lookAt(S.pos.x, cinta.position.y, S.pos.z); scene.add(cinta);
+        G.on('update', () => {
+          const k = (S.clock || 0) * 2.2 + t.z;
+          cinta.lookAt(S.pos.x, cinta.position.y, S.pos.z);
+          cinta.rotateZ(Math.sin(k) * 0.12);
+        }, 41);
         G.interaccion.add({ id: 'tramo_' + id, x, z: t.z, r: 4.5, visible: () => S.step === 0 && !!(S.edu && S.edu.inicio) && !tiene('obs_' + id),
           label: () => 'Mirar ' + t.nombre,
           use: () => {

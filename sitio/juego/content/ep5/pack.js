@@ -246,7 +246,23 @@
 
     continuidad, // D11: líneas que dependen de lo elegido en capítulos anteriores ([] sin dato)
     inicio(G) {
-      G.dialogo.say(G.dialogo.L('inicio:ep5').concat(continuidad()), () => G.ui.toast('Habla con Iguaca', 3000));
+      const mirar = p => {
+        if (G.quiet || !p || !G.camara || !G.S) return;
+        const dx = p.x - G.S.pos.x, dz = p.z - G.S.pos.z, n = Math.hypot(dx, dz) || 1;
+        if (G.S.facing) { G.S.facing.x = dx / n; G.S.facing.z = dz / n; }
+        G.camara.yaw = Math.atan2(-dx, -dz);
+        G.camara.inclina = 0.22; // el aviso de arriba no tapa la cara de quien está delante
+        try { G.camara.manual(); G.camara.place(true); } catch (e) { /* sin cámara */ }
+      };
+      mirar(IGUACA);
+      if (!G.quiet && G.fx && G.fx.burst && G.terreno) {
+        try { G.audio.play('aviso'); } catch (e) { /* sin audio */ }
+        G.fx.burst(TRX.x, G.terreno.height(TRX.x, TRX.z) + 1.1, TRX.z, 'gold', 8);
+      }
+      G.dialogo.say(G.dialogo.L('inicio:ep5').concat(continuidad()), () => {
+        mirar(IGUACA);
+        G.ui.toast('Habla con Iguaca', 3000);
+      });
     },
 
     preparar(G) {
@@ -663,6 +679,8 @@
           if (!G.eventos.had('RelayBuilt')) { G.eventos.log('RelayBuilt'); G.comic.capture('relevo'); }
         }
         G.audio.play('pickup'); G.misiones.check(); pintar();
+        // La noche se queda como está: solo unas estrellas al plantar la estación (sfx y partículas que ya existen).
+        if (G.fx && G.fx.burst) G.fx.burst(est.x, (G.terreno ? G.terreno.height(est.x, est.z) : 0) + 1.8, est.z, 'stars', 12);
         G.ui.toast(aDonde(), 3000);
         return true;
       }

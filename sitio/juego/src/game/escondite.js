@@ -58,14 +58,15 @@ window.AVEscondite = function (G) {
       const st = document.createElement('style'); st.id = 'esc-css';
       st.textContent = '#esc-hud{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 12px);z-index:60;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);padding:8px 12px;border-radius:18px;background:rgba(16,36,28,.86);color:#fff8e6;font:600 15px Fredoka,system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.35)}#esc-hud[hidden]{display:none}' +
         '#esc-hud b{font-size:16px}#esc-hud .esc-pista{flex:1 1 100%;font-size:13px;font-weight:600;line-height:1.25;text-align:center}#esc-hud .esc-pista:empty{display:none}' +
-        '@keyframes esc-pop{40%{transform:scale(1.25)}}#esc-hud [data-k="n"].esc-pop{display:inline-block;animation:esc-pop .4s ease-out}@media (prefers-reduced-motion:reduce){#esc-hud [data-k="n"].esc-pop{animation:none}}' +
+        '@keyframes esc-pop{40%{transform:scale(1.25)}}#esc-hud [data-k="n"].esc-pop{display:inline-block;animation:esc-pop .4s ease-out}#esc-hud .esc-pista.cerca{color:#ffd27a;animation:esc-pop 1.1s ease-in-out infinite}@media (prefers-reduced-motion:reduce){#esc-hud [data-k="n"].esc-pop,#esc-hud .esc-pista.cerca{animation:none}}' +
+        '@media (max-width:420px){#esc-hud{padding:6px 8px;gap:4px 8px}#esc-hud b{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}#esc-hud button.salir{order:-1}}' +
         '#esc-hud button{min-height:44px;padding:4px 16px;border-radius:22px;border:0;font:700 15px Fredoka,system-ui,sans-serif;background:#fff3d6;color:#3b2a14;cursor:pointer}#esc-hud button.salir{background:#ffd0c4}#esc-hud button[hidden]{display:none}' +
         // PULIR 4: panel final como el de los demás minijuegos (tiempo, récord, «Otra vez» y «Salir»; letra y botones de .av-fin, ui.css)
         '#esc-fin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:61;width:min(400px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:18px 18px 16px;border-radius:24px;background:rgba(16,36,28,.93);color:#fff8e6;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;gap:8px}#esc-fin[hidden]{display:none}#esc-fin:focus{outline:none}' +
         '#esc-fin h2,#esc-fin p{margin:0}#esc-fin .esc-gran{display:flex;align-items:center;gap:8px}#esc-fin .esc-gran svg{width:44px;height:44px}#esc-fin .av-det{opacity:.85}#esc-fin .av-bots{margin-top:6px}' +
         '@media (orientation:landscape) and (max-height:500px){#esc-fin{padding:12px 16px;gap:4px}#esc-fin .esc-gran svg{width:34px;height:34px}}' +
         'body.escondite-on:has(#esc-fin:not([hidden])) #toast{visibility:hidden!important}' +
-        'body.escondite-on :is(#quest,#inv,#modo-salir,#toast,#prompt,#bocadillos){visibility:hidden!important}' +
+        'body.escondite-on :is(#quest,#inv,#modo-salir,#toast,#prompt,#bocadillos,#b-diary,#b-emotes){visibility:hidden!important}' +
         'body.escondite-on:has(#esc-fin:not([hidden])) :is(#stick,#acts,#minimapa,#marcador){visibility:hidden!important}' + // PULIR 4 (revisión): con el panel final, sin joystick ni botones de vuelo detrás (como los demás)
         // F20 r2: el aviso de inicio va debajo de la barra (se cruzaban); al terminar, el resultado lo dice la barra (sin aviso detrás)
         '@media (orientation:landscape){body.escondite-on #toast{top:calc(env(safe-area-inset-top,0px) + 80px)!important;bottom:auto!important}}';
@@ -90,7 +91,7 @@ window.AVEscondite = function (G) {
     if (nn.textContent && nn.textContent !== linea) { nn.classList.remove('esc-pop'); void nn.offsetWidth; nn.classList.add('esc-pop'); }
     nn.textContent = linea;
     q('r').textContent = resultado ? '' : reloj(Math.max(0, LIMITE - t)) + (mejor != null ? txt(' · récord ', ' · best ') + reloj(mejor) : '');
-    q('h').textContent = !jugando || resultado ? '' : n === 0 ? txt('Sigue el pío: si suena más fuerte, estás más cerca', 'Follow the peep: louder means you are closer') : txt('Quedan ' + (3 - n), (3 - n) + ' still hiding');
+    q('h').textContent = !jugando || resultado ? '' : n === 0 ? txt('Si el pío suena más fuerte, estás más cerca', 'If the peep gets louder, you are closer') : txt('Quedan ' + (3 - n), (3 - n) + ' still hiding');
     const otra = hudEl.querySelector('[data-a="otra"]'); otra.hidden = jugando || !!fin; otra.textContent = txt('Otra vez', 'Play again'); // con el panel final, «Otra vez» va en el panel
     hudEl.querySelector('[data-a="salir"]').textContent = txt('Salir', 'Exit');
     pintarFin();
@@ -180,8 +181,9 @@ window.AVEscondite = function (G) {
       if (G.audio && G.audio.play && Math.floor(t * 2) !== Math.floor((t - dt) * 2)) {
         try { G.audio.play('pio_escondite', pio); } catch (e) { /* */ }
       }
-      if (mejorD < 2.4) { quien.hallado = true; gag(); try { G.fx.burst(quien.x, quien.y + 0.5, quien.z, 'gold', 10); } catch (e) { /* */ } try { if (!G.quiet && G.audio && G.audio.play) G.audio.play('encaje'); } catch (e) { /* el mismo «encaje» de cuando algo encaja */ } pintar(); if (modo) pintarHud(); }
+      if (mejorD < 2.4) { quien.hallado = true; gag(); try { G.fx.burst(quien.x, quien.y + 0.5, quien.z, 'gold', 10); G.fx.burst(quien.x, quien.y + 0.8, quien.z, 'leaves', 12); } catch (e) { /* */ } try { if (!G.quiet && G.audio && G.audio.play) G.audio.play('encaje'); } catch (e) { /* el mismo «encaje» de cuando algo encaja */ } pintar(); if (modo) pintarHud(); }
     }
+    if (modo && hudEl) { const h = hudEl.querySelector('[data-k="h"]'); if (h) h.classList.toggle('cerca', jugando && !!quien && mejorD < 14); }
     let todos = true;
     for (const s of sitios) if (!s.hallado) { todos = false; break; }
     if (todos) {

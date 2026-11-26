@@ -812,7 +812,19 @@
       }
       return url;
     }
-    function elegir(t) { if (!TIPOS[t]) return false; if (!tiene(t)) { aviso('Esa pieza está en el Mercadito del río.'); return false; } tipo = t; sonar('tick'); actualizar(); pintarHud(); return true; }
+    function elegir(t) {
+      if (!TIPOS[t]) return false;
+      if (!tiene(t)) { aviso('Esa pieza está en el Mercadito del río.'); return false; }
+      tipo = t; sonar('boton'); actualizar(); pintarHud();
+      const b = hudEl && hudEl.querySelector('[data-cl-tipo="' + t + '"]');
+      if (b) {
+        const f = b.parentElement;
+        if (f && b.offsetLeft < f.scrollLeft) f.scrollLeft = b.offsetLeft;
+        else if (f && b.offsetLeft + b.offsetWidth > f.scrollLeft + f.clientWidth - 36) f.scrollLeft = b.offsetLeft + b.offsetWidth - f.clientWidth + 36;
+        b.classList.remove('cl-pop'); void b.offsetWidth; b.classList.add('cl-pop');
+      }
+      return true;
+    }
     function anotar(h) { historial.push(h); rehacerPila.length = 0; }
     function copia() { return lista.map(p => ({ t: p.t, x: p.x, z: p.z, r: p.r })); }
     function haciaAtras(h) {
@@ -1154,12 +1166,16 @@
         '#cl-hud button:hover{background:rgba(255,255,255,.18)}#cl-hud button:focus-visible{outline:3px solid #ffd27a;outline-offset:1px}' +
         '#cl-hud button[aria-pressed="true"]{background:#ffd27a;color:#10241c;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}' +
         '#cl-hud svg{width:30px;height:30px}#cl-hud .cl-cuenta{color:#fff8e6;font:700 13px system-ui,sans-serif;padding:0 8px;white-space:nowrap}' +
+        '#cl-hud .cl-ahora{color:#ffd27a;font:800 13px system-ui,sans-serif;padding:0 6px;white-space:nowrap;max-width:9.5em;overflow:hidden;text-overflow:ellipsis}' +
+        '#cl-hud .cl-carril{position:relative;max-width:100%;min-width:0}' +
+        '#cl-hud [data-cl="mas"]{position:absolute;right:2px;top:50%;transform:translateY(-50%);z-index:2;background:#ffd27a;color:#10241c;font:800 22px/1 system-ui,sans-serif;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.35)}' +
+        '@keyframes cl-pop{0%{transform:scale(1)}40%{transform:scale(1.16)}100%{transform:scale(1)}}#cl-hud button.cl-pop{animation:cl-pop .28s ease}' +
         '#cl-hud kbd{font:600 10px system-ui,sans-serif;opacity:.7}' +
         '#cl-hud .cl-herr button{flex-direction:row;font-size:13px;padding:4px 10px;white-space:nowrap}' +
         // F20: los botones de herramientas no se encogen por debajo de su texto (en inglés «Quick builds T» se montaba sobre el
         // siguiente): la fila salta a otra línea; y tienen forma de botón (antes parecían texto suelto)
         '#cl-hud .cl-herr{flex-wrap:wrap;justify-content:center;overflow:visible}#cl-hud .cl-herr button{flex:0 0 auto;background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 1px rgba(255,248,230,.3)}' +
-        '#cl-hud .cl-plantillas{display:none}#cl-hud.cl-pl-abierta .cl-plantillas{display:flex}#cl-hud.cl-pl-abierta .cl-piezas{display:none}' +
+        '#cl-hud .cl-plantillas{display:none}#cl-hud.cl-pl-abierta .cl-plantillas{display:flex}#cl-hud.cl-pl-abierta .cl-piezas{display:none}#cl-hud.cl-pl-abierta .cl-carril{display:none}' +
         '#cl-hud .cl-plantillas button{width:74px;flex:0 0 auto}#cl-hud .cl-plantillas small{font-size:11px;line-height:1.1}' +
         '#cl-hud [data-cl="plantillas"][aria-expanded="true"]{background:#ffd27a;color:#10241c}' +
         '#cl-hud .cl-deshacer.cl-hay{background:#ffd27a;color:#10241c;box-shadow:0 0 0 3px rgba(255,210,122,.7);min-width:84px;font-weight:800}' +
@@ -1181,7 +1197,7 @@
         // PULIR 2 (p23): la última pieza quedaba cortada en el borde sin señal de que la fila se desliza: el borde derecho se desvanece
         '#cl-hud .cl-piezas{padding-right:28px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 30px),rgba(0,0,0,.15));mask-image:linear-gradient(90deg,#000 calc(100% - 30px),rgba(0,0,0,.15))}}' +
         // C10: teléfono en horizontal (844×390): la barra va al centro, entre el joystick y los botones de acción, bajo el HUD de arriba
-        '@media (orientation:landscape) and (max-height:500px){#cl-hud,body:has(#emotes:not([hidden])) #cl-hud{left:50%;transform:translateX(-50%);align-items:center;top:calc(env(safe-area-inset-top,0px) + 150px);max-width:calc(100vw - 400px)}#cl-hud .cl-herr{flex-wrap:wrap;justify-content:center;overflow:visible}#cl-hud .cl-piezas{flex-wrap:nowrap;justify-content:flex-start}#cl-hud .cl-plantillas{overflow:visible}#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{padding:2px}#cl-hud svg{width:26px;height:26px}#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}' +
+        '@media (orientation:landscape) and (max-height:500px){#cl-hud .cl-ahora{display:none}#cl-hud,body:has(#emotes:not([hidden])) #cl-hud{left:50%;transform:translateX(-50%);align-items:center;top:calc(env(safe-area-inset-top,0px) + 150px);max-width:calc(100vw - 400px)}#cl-hud .cl-herr{flex-wrap:wrap;justify-content:center;overflow:visible}#cl-hud .cl-piezas{flex-wrap:nowrap;justify-content:flex-start}#cl-hud .cl-plantillas{overflow:visible}#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{padding:2px}#cl-hud svg{width:26px;height:26px}#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}' +
         // PULIR 6: en horizontal el aviso tapaba los contadores (arriba a la derecha; no hay hueco entre el objetivo, los botones y la
         // barra). Construyendo va abajo, entre el palo y los botones de acción, bajo la barra, en el sitio de la línea «Acción: …»
         // (que se esconde mientras el aviso está a la vista: el botón «Colocar» dice lo mismo)
@@ -1202,9 +1218,9 @@
       if (!hudEl) {
         hudEl = document.createElement('div'); hudEl.id = 'cl-hud'; hudEl.className = 'hud'; hudEl.setAttribute('role', 'toolbar'); hudEl.setAttribute('aria-label', 'Para construir');
         const tecla = window.matchMedia && matchMedia('(pointer: coarse)').matches ? () => '' : k => `<kbd>${k}</kbd>`;
-        hudEl.innerHTML = '<div class="cl-fila cl-piezas">' + filaPiezas() + '</div>' +
+        hudEl.innerHTML = '<div class="cl-carril"><div class="cl-fila cl-piezas">' + filaPiezas() + '</div><button type="button" data-cl="mas" aria-label="Más piezas" hidden>›</button></div>' +
           '<div class="cl-fila cl-plantillas" id="cl-plantillas" role="group" aria-label="Plantillas">' + filaPlantillas() + '</div>' +
-          `<div class="cl-fila cl-herr"><span class="cl-cuenta" aria-live="polite"></span><button type="button" class="cl-deshacer" data-cl="deshacer" aria-disabled="true" aria-label="Deshacer" aria-keyshortcuts="Z"><span class="cl-etiq">Deshacer</span> ${tecla('Z')}</button><button type="button" data-cl="girar" aria-label="Girar" aria-keyshortcuts="R">Girar ${tecla('R')}</button>` +
+          `<div class="cl-fila cl-herr"><span class="cl-cuenta" aria-live="polite"></span><span class="cl-ahora"></span><button type="button" class="cl-deshacer" data-cl="deshacer" aria-disabled="true" aria-label="Deshacer" aria-keyshortcuts="Z"><span class="cl-etiq">Deshacer</span> ${tecla('Z')}</button><button type="button" data-cl="girar" aria-label="Girar" aria-keyshortcuts="R">Girar ${tecla('R')}</button>` +
           `<button type="button" data-cl="rejilla" aria-pressed="false" aria-label="Cuadritos">Cuadritos</button><button type="button" data-cl="plantillas" aria-expanded="false" aria-controls="cl-plantillas" aria-label="Plantillas" aria-keyshortcuts="T">Plantillas ${tecla('T')}</button><button type="button" data-cl="foto" aria-label="Foto">Foto</button>` +
           `<button type="button" data-cl="quitar" aria-label="Quitar" aria-keyshortcuts="Delete">Quitar ${tecla('Supr')}</button><button type="button" data-cl="listo" aria-label="Listo" aria-keyshortcuts="Escape">Listo ${tecla('Esc')}</button>` +
           (G.tienda && G.tienda.disponible && G.tienda.disponible() ? '<button type="button" data-cl="tienda" aria-label="Mercadito">Mercadito</button>' : '') + '</div>';
@@ -1227,6 +1243,7 @@
         hudEl.addEventListener('click', e => {
           const b = e.target.closest && e.target.closest('button'); if (!b) return;
           if (b.dataset.clTipo) elegir(b.dataset.clTipo);
+          else if (b.dataset.cl === 'mas') { masPiezas(); return; }
           else if (b.dataset.cl === 'girar') { if (gestoYa) gestoYa = false; else girar(1); }
           else if (b.dataset.cl === 'deshacer') deshacer();
           else if (b.dataset.cl === 'rejilla') cuadrícula();
@@ -1273,6 +1290,7 @@
         const dest = abre ? hudEl.querySelector('[data-cl-pl]') : b;
         if (dest) try { dest.focus({ preventScroll: true }); } catch (e) { /* */ }
       }
+      verMas();
       return abre;
     }
     // La fila de piezas: las 7 de siempre y las del Mercadito que ya son tuyas (teclas 1–9 en ese orden)
@@ -1292,6 +1310,9 @@
       hudEl.querySelectorAll('[data-cl-tipo]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.clTipo === tipo)));
       const c = hudEl.querySelector('.cl-cuenta'), t = `Piezas: ${lista.length}/${presupuesto()}`;
       if (c && t !== cuentaTxt) { cuentaTxt = t; c.textContent = t; }
+      const nom = hudEl.querySelector('.cl-ahora'), n = NOMBRE[tipo] || '';
+      if (nom && nom.dataset.es !== n) { nom.dataset.es = n; nom.textContent = n; }
+      verMas();
       const d = hudEl.querySelector('[data-cl="deshacer"]');
       if (d) {
         const n = historial.length, et = d.querySelector('.cl-etiq');
@@ -1300,6 +1321,22 @@
         if (et) et.textContent = n ? 'Deshacer · ' + n : 'Deshacer';
       }
     }
+    function verMas() {
+      const f = hudEl && hudEl.querySelector('.cl-piezas');
+      const b = hudEl && hudEl.querySelector('[data-cl="mas"]');
+      if (!f || !b) return;
+      b.hidden = hudEl.classList.contains('cl-pl-abierta') || f.scrollWidth <= f.clientWidth + 2;
+    }
+    function masPiezas() {
+      const f = hudEl && hudEl.querySelector('.cl-piezas');
+      if (!f) return;
+      const paso = Math.max(80, f.clientWidth - 48);
+      const fin = f.scrollLeft + f.clientWidth >= f.scrollWidth - 4;
+      const suave = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+      f.scrollTo({ left: fin ? 0 : f.scrollLeft + paso, behavior: suave ? 'smooth' : 'auto' });
+      sonar('boton');
+    }
+    try { G.on('aula', k => { if (k !== 'idioma' || !hudEl) return; const a = hudEl.querySelector('.cl-ahora'); if (a) a.dataset.es = ''; pintarHud(); }); } catch (e) { /* sin aula */ }
     // Botón del HUD (junto a Pausa) y tarjeta «Construir» en «¿Cómo quieres jugar?» (no lleva data-modo: menu_modos.js no la cuenta)
     let botonHud = null, tarjeta = null;
     // T17: el botón del HUD no sale con un minijuego o un modo de la portada en marcha (salía encima de Pesca, Minigolf, Carreras…)
@@ -1427,6 +1464,10 @@
         check('Al abrir, el foco entra en la primera pieza y no queda en body', !!hudEl && document.activeElement === hudEl.querySelector('button[data-cl-tipo]'));
         await espera(60);
         check('La barra de piezas se ve con las 7 de siempre (y las compradas) y la cuenta', !!hudEl && !hudEl.hidden && BASE.every(t => hudEl.querySelector('[data-cl-tipo="' + t + '"]')) && hudEl.querySelectorAll('[data-cl-tipo]').length === disponibles().length && /Piezas: 0\/\d+/.test(hudEl.querySelector('.cl-cuenta').textContent), hudEl && hudEl.querySelector('.cl-cuenta').textContent);
+        check('La pieza elegida dice su nombre', (hudEl.querySelector('.cl-ahora') || {}).textContent === 'Nido de ramitas');
+        elegir('flores');
+        check('Elegir otra pieza dice su nombre y da un salto', (hudEl.querySelector('.cl-ahora') || {}).textContent === 'Flores' && !!(hudEl.querySelector('[data-cl-tipo="flores"]') || {}).classList.contains('cl-pop') && !!(hudEl.querySelector('[data-cl="mas"]')));
+        elegir('nido');
         const botonesA = [...hudEl.querySelectorAll('button')], hojaA = (document.getElementById('cl-estilo') || {}).textContent || '';
         check('Cada botón tiene nombre para el lector, mide 44 px y el foco se ve', botonesA.length >= 8 && botonesA.every(b => (b.getAttribute('aria-label') || '').trim().length > 1 && parseFloat(getComputedStyle(b).minWidth) >= 44 && parseFloat(getComputedStyle(b).minHeight) >= 44) && /:focus-visible/.test(hojaA) && /prefers-reduced-motion/.test(hojaA), botonesA.map(b => b.getAttribute('aria-label')).join(','));
         {
