@@ -601,9 +601,10 @@ window.AVV18Pesca = function (G) {
       '#v18-pesca .vp-alb{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 10px;font-size:14px;font-weight:600;margin:4px 0}' +
       '#v18-pesca .vp-flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none}#v18-pesca .vp-flash.on{animation:vpFlash .45s ease-out}' +
       '@keyframes vpFlash{from{opacity:.75}to{opacity:0}}@keyframes vpLate{from{transform:scale(1)}to{transform:scale(1.06)}}' +
-      '@media (prefers-reduced-motion:reduce){#v18-pesca .vp-flash.on,#v18-pesca button.vp-principal.pica{animation:none}}' +
+      '@keyframes vpSuma{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}#v18-pesca .vp-info [data-k="puntos"].vp-suma{display:inline-block;animation:vpSuma .35s ease;color:#ffd84a}' +
+      '@media (prefers-reduced-motion:reduce){#v18-pesca .vp-flash.on,#v18-pesca button.vp-principal.pica,#v18-pesca .vp-info [data-k="puntos"].vp-suma{animation:none}}' +
       // móvil: el panel deja libre la columna de Diario / Gestos / Pausa de la derecha (tapaba la fila de tiempo y la ficha)
-      '@media (max-width:760px){#v18-pesca{margin-inline:16px auto;width:calc(100vw - 96px)}#v18-pesca .vp-info{font-size:14px;gap:2px 10px}#v18-pesca button kbd{display:none}body.v18-pesca-on #toast{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto}body.v18-pesca-on #minimapa{visibility:hidden}#v18-pesca .vp-ficha .vp-d{font-size:14px}}' +
+      '@media (max-width:760px){#v18-pesca{margin-inline:16px auto;width:calc(100vw - 96px)}#v18-pesca .vp-info{display:grid;grid-template-columns:1fr 1fr;font-size:14px;gap:2px 10px}#v18-pesca button kbd{display:none}body.v18-pesca-on #toast{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto}body.v18-pesca-on #minimapa{visibility:hidden}#v18-pesca .vp-ficha .vp-d{font-size:14px}}' +
       '@media (min-width:761px) and (pointer:fine){#v18-pesca{bottom:16px}}' +
       // F20 r2: teléfono en horizontal (≤ 520 px de alto): el panel ocupaba todo el centro y tapaba a Vittata, la caña y el agua.
       // Ahora va pegado abajo y compacto: ◀ Lanzar ▶ y Salir en una sola fila, botones de 44 px y la pista más pequeña.
@@ -731,7 +732,11 @@ window.AVV18Pesca = function (G) {
     if (!hud || !hud.lleno) return;
     const tt = tactil(); hud.el.classList.toggle('tactil', tt);
     texto('tiempo', tiempoEt(A.tiempo)); hud.q('tiempo').classList.toggle('poco', A.tiempo <= 20);
-    texto('peces', pecesTxt(A.peces)); texto('puntos', puntosTxt(A.puntos)); texto('record', recordTxt(Math.max(A.record, 0)));
+    texto('peces', pecesTxt(A.peces));
+    const pts = hud.q('puntos'), antesPts = pts ? pts.textContent : '';
+    texto('puntos', puntosTxt(A.puntos));
+    if (pts && A.puntos > 0 && antesPts && antesPts !== puntosTxt(A.puntos)) { pts.classList.remove('vp-suma'); void pts.offsetWidth; pts.classList.add('vp-suma'); }
+    texto('record', recordTxt(Math.max(A.record, 0)));
     if (A.fase === 'foto' || A.fase === 'fin') return;
     const tira = A.fase === 'tira';
     hud.q('cargaW').hidden = tira; hud.q('tiraW').hidden = !tira;
@@ -747,7 +752,8 @@ window.AVV18Pesca = function (G) {
     const pr = hud.el.querySelector('button[data-a="accion"]'); if (pr) { pr.classList.toggle('pica', A.fase === 'pica'); if (pr.getAttribute('aria-label') !== verbo) pr.setAttribute('aria-label', verbo); }
     const apunta = A.fase === 'listo' || A.fase === 'carga';
     for (const a of ['izq', 'der']) { const bb = hud.el.querySelector('button[data-a="' + a + '"]'); if (bb) bb.style.visibility = apunta ? '' : 'hidden'; }
-    if (forzar || !A.pistaTxt) { if (A.fase === 'listo' && (!A.pistaTxt || forzar && ![TXT.tierra, TXT.escapo, TXT.seFue].includes(A.pistaTxt))) A.pistaTxt = tt ? TXT.guiaT : TXT.guia; texto('guia', A.pistaTxt || ''); }
+    const guiaMovil = tt || (typeof innerWidth === 'number' && innerWidth <= 760);
+    if (forzar || !A.pistaTxt) { if (A.fase === 'listo' && (!A.pistaTxt || forzar && ![TXT.tierra, TXT.escapo, TXT.seFue].includes(A.pistaTxt))) A.pistaTxt = guiaMovil ? TXT.guiaT : TXT.guia; texto('guia', A.pistaTxt || ''); }
   }
 
   // Mercadito del río desde los resultados (botón o T): la tarjeta va encima del panel; al cerrarla se vuelve a los resultados
