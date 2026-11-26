@@ -503,7 +503,17 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
 #flight .fl-nuevo { color: var(--gold, #ffd84a); font-weight: 800; margin-bottom: 8px; }
 #flight .fl-fila { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
 #flight .fl-tecla { font-size: 12px; opacity: .75; margin-left: 6px; }
-@media (prefers-reduced-motion: reduce) { #flight .fl-pista, #flight .fl-chip.pop { animation: none; } }`;
+#flight .fl-pista { width: max-content; } /* el subtítulo no se queda en una columna de tres líneas */
+#flight .fl-pista::after { content: "↑"; display: block; margin-top: 2px; font-size: .9em; line-height: 1; animation: fl-sube .8s ease-in-out infinite; }
+@keyframes fl-sube { 50% { transform: translateY(-6px); } }
+@media (orientation: landscape) and (max-height: 500px) {
+  #flight .fl-pista { top: calc(env(safe-area-inset-top, 0px) + 68px); bottom: auto; font-size: 16px; padding: 6px 14px; max-width: min(78vw, 520px); }
+  #flight .fl-pista small { display: inline; margin: 0 0 0 8px; }
+  #flight .fl-pista::after { display: inline-block; margin: 0 0 0 8px; }
+  /* En horizontal el tronco entra por la derecha: Pausa se va a la izquierda */
+  body.flight-on #sys { right: auto; left: max(12px, env(safe-area-inset-left, 0px)); top: calc(env(safe-area-inset-top, 0px) + 72px); transform: none; }
+}
+@media (prefers-reduced-motion: reduce) { #flight .fl-pista, #flight .fl-chip.pop, #flight .fl-pista::after { animation: none; } }`;
     function montarUI() {
       if (st.ui) return st.ui;
       const css = document.createElement('style'); css.id = 'flight-css'; css.textContent = CSS; document.head.appendChild(css);
