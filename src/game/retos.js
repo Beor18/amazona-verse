@@ -456,6 +456,11 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
   #retos .rt-fin .rt-dato { font-size: 17px; padding: 5px 6px; }
   #retos .rt-fin .rt-meta, #retos .rt-fin .rt-descanso, #retos .rt-fin .rt-nuevo { margin-bottom: 6px; }
 }
+/* Teléfono chico y tableta: el 3 enorme tapaba la flecha. Baja de tamaño y la flecha espera. */
+@media (max-width: 1100px) and (min-height: 501px) {
+  #retos.rt-nubes .rt-cuenta { place-items: start center; padding-top: calc(env(safe-area-inset-top, 0px) + 62px); padding-left: 0; font-size: 56px; -webkit-text-stroke-width: 4px; }
+  #retos.rt-nubes.rt-contando .rt-flecha { visibility: hidden; }
+}
 @media (max-width: 640px) and (orientation: portrait) { #retos .rt-turbo { left: auto; right: 12px; transform: none; bottom: calc(env(safe-area-inset-bottom, 0px) + 216px); } } /* teléfono en vertical: encima de Bajar e Impulso, lejos del joystick y de Subir */
 #retos-fx { position: fixed; inset: 0; pointer-events: none; z-index: var(--z-hud); }
 #retos-fx > div { position: absolute; inset: 0; opacity: 0; }
