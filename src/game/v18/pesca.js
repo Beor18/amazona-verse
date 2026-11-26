@@ -610,11 +610,12 @@ window.AVV18Pesca = function (G) {
       '@media (min-width:761px) and (pointer:fine){#v18-pesca{bottom:16px}}' +
       // F20 r2: teléfono en horizontal (≤ 520 px de alto): el panel ocupaba todo el centro y tapaba a Vittata, la caña y el agua.
       // Ahora va pegado abajo y compacto: ◀ Lanzar ▶ y Salir en una sola fila, botones de 44 px y la pista más pequeña.
-      '@media (max-height:520px) and (orientation:landscape){#v18-pesca{bottom:calc(env(safe-area-inset-bottom,0px) + 6px);width:min(600px,calc(100vw - 32px));margin-inline:auto}' +
+      '@media (max-height:520px) and (orientation:landscape){#v18-pesca{bottom:calc(env(safe-area-inset-bottom,0px) + 14px);width:min(600px,calc(100vw - 32px));margin-inline:auto}' +
       '#v18-pesca .vp-caja{padding:5px 10px 6px;border-radius:14px}#v18-pesca .vp-info{font-size:14px;gap:0 10px}#v18-pesca .vp-barra{height:9px;margin:4px 0 1px}#v18-pesca .vp-et{font-size:11px;line-height:1.1}' +
       '#v18-pesca [data-k="juego"]{display:grid;grid-template-columns:3fr 1fr;column-gap:8px;row-gap:6px;align-items:end}#v18-pesca [data-k="juego"]>:not(.vp-bot):not(.vp-bot2){grid-column:1/-1}' +
       '#v18-pesca .vp-bot{grid-column:1;grid-row:2;margin-top:0}#v18-pesca .vp-bot2{grid-column:2;grid-row:2;margin-top:0}#v18-pesca button{min-height:44px;font-size:15px;padding:4px 8px}#v18-pesca button.vp-principal{font-size:17px}#v18-pesca button kbd{display:none}' +
-      '#v18-pesca .vp-tira{height:24px;margin:4px 0 3px}#v18-pesca .vp-guia{grid-column:1/-1;grid-row:3;margin-top:0;width:100%;font-size:13px;padding:3px 12px}#v18-pesca .vp-barra{height:14px}#v18-pesca .vp-ficha .vp-d{font-size:14px}#v18-pesca .vp-ficha p,#v18-pesca .vp-fin p{margin:1px 0}}';
+      '#v18-pesca .vp-tira{height:24px;margin:4px 0 3px}#v18-pesca .vp-guia{grid-column:1/-1;grid-row:3;margin-top:0;width:100%;font-size:13px;padding:3px 12px}#v18-pesca .vp-barra{height:14px}#v18-pesca .vp-ficha .vp-d{font-size:14px}#v18-pesca .vp-ficha p,#v18-pesca .vp-fin p{margin:1px 0}' +
+      '@keyframes vp-lee{50%{transform:scale(1.03)}}#v18-pesca .vp-guia:not(:empty){animation:vp-lee 1.8s ease-in-out 2}}';
     document.head.appendChild(st);
   }
   function montarHud() {
