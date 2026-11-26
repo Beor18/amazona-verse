@@ -99,13 +99,34 @@
       const terminar = (saltada) => {
         if (hecho) return; hecho = true; soltar();
         if (saltada) { G.dialogo.cancelarLibre(); if (A) A.fin(); } else if (A) A.claro(2200);
-        const llama = 'La Gran Ruptura dañó el taller. ¡Iguaca te llama desde ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán') + '! Despega y pósate a su lado.';
+        // Aviso corto (2 líneas en 390×844): el de antes tapaba la cara de Vittata hasta llegar a la copa.
+        const llama = '¡Iguaca te llama desde ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán') + '! Despega y pósate a su lado.';
         G.ui.toast(llama, 3200, { fijo: true }); // de una sola vez: la cola llena no lo tira
+        const per = G.c.luma && G.c.luma.percha;
+        if (!G.quiet && per && G.camara && G.S) {
+          const dx = per.x - G.S.pos.x, dz = per.z - G.S.pos.z, n = Math.hypot(dx, dz) || 1;
+          if (G.S.facing) { G.S.facing.x = dx / n; G.S.facing.z = dz / n; }
+          G.camara.yaw = Math.atan2(-dx, -dz);
+          try { G.camara.manual(); G.camara.place(true); } catch (e) { /* sin cámara */ }
+        }
         // PULIR 7 (ronda 2): es { fijo }, así que volvía a la cola cada vez que un diálogo lo apartaba y salía con el paso 0 ya hecho
         // (tres veces más tras hablar con Iguaca, y tapaba las instrucciones de En familia). En cuanto el paso «luma» queda atrás
         // (o la partida cargada ya lo tiene), se quita de la pantalla y de la cola.
         avisoInicio = llama;
         if (G.ui.quitarAviso) { const vigiaAviso = () => { if (G.S.step >= 1) { G.ui.quitarAviso(llama); G.off('update', vigiaAviso); } }; G.on('update', vigiaAviso, 83); }
+        // El primer despegue suena a aleteo (sfx de Suno que ya está) y suelta unas plumas. Solo antes de llegar a Iguaca.
+        if (!G.c._ciclo3Vuelo) {
+          G.c._ciclo3Vuelo = true;
+          let air = false;
+          G.on('update', () => {
+            const fly = !!(G.fisica && G.fisica.MOVE && G.fisica.MOVE.flying);
+            if (fly && !air && !G.quiet && (G.S.step || 0) < 1) {
+              try { G.audio.play('aleteo'); } catch (e) { /* sin audio */ }
+              try { if (G.fx && G.fx.burst) G.fx.burst(G.S.pos.x, G.S.pos.y + 0.4, G.S.pos.z, 'feathers', 8); } catch (e) { /* sin efectos */ }
+            }
+            air = fly;
+          }, 70);
+        }
         // T30: ya no se repite a los 2,6 s. Con la cola de avisos (T2) el de «Lugares descubiertos» espera detrás y no la tapa,
         // y repetirla la dejaba muchos segundos en pantalla
       };
