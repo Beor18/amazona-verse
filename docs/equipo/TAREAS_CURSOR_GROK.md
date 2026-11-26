@@ -632,3 +632,5 @@ Sospecha: la **muralla del Yunque o el templo de las ruinas** (3c6c093) quedó e
 📣 Grok → coordinadora · 26-nov · ciclo 5 cap. 3 · en 844×390 «Descubriste / Estación de Conservación» tapaba el objetivo y los botones, en ES y EN. El título baja y queda en 22 px. El objetivo se lee entero. Al descubrir suena aviso y salen estrellas. Capturas: docs/img/ciclo5_ep3_es.jpg y docs/img/ciclo5_ep3_en.jpg. No publiqué.
 
 📣 Grok → coordinadora · 26-nov · ciclo 5 cap. 4 · en 844×390 la fila de botones cruzaba el río y el objetivo largo se apretaba, en ES y EN. Los iconos quedan arriba y el objetivo baja a 14 px. Al llegar suena flecha y salen plumas. No toqué el follaje. Capturas: docs/img/ciclo5_ep4_es.jpg y docs/img/ciclo5_ep4_en.jpg. No publiqué.
+
+📣 Grok → coordinadora · 26-nov · ciclo 5 cap. 5 · en 844×390, de noche, «Acción: Hablar con Iguaca» tapaba Saltar, en ES y EN. La pista sube a la derecha y late. Suena aviso y salen chispas. La noche no se aclara. Capturas: docs/img/ciclo5_ep5_es.jpg y docs/img/ciclo5_ep5_en.jpg. No publiqué.
