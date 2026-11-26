@@ -42,24 +42,25 @@ window.AVCanto = function (G) {
   function css() {
     if (document.getElementById('canto-css')) return;
     const st = document.createElement('style'); st.id = 'canto-css';
-    st.textContent = '#canto{position:fixed;inset:0;z-index:80;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,rgba(16,48,32,.55),rgba(8,20,14,.85));font-family:Fredoka,system-ui,sans-serif;color:#fff8ea;padding:16px;box-sizing:border-box}' +
+    st.textContent = '#canto{position:fixed;inset:0;z-index:80;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,rgba(16,48,32,.94),rgba(8,20,14,.98));font-family:Fredoka,system-ui,sans-serif;color:#fff8ea;padding:16px;box-sizing:border-box}' +
       '#canto[hidden]{display:none}#canto .c-caja{width:min(440px,100%);display:flex;flex-direction:column;align-items:center;gap:14px}' +
       '#canto h2{margin:0;font-size:26px;text-shadow:0 2px 6px #0008}#canto .c-info{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-weight:600;font-size:16px}' +
-      '#canto .c-info span{background:rgba(255,255,255,.14);border-radius:999px;padding:4px 12px}#canto .c-msg{min-height:1.4em;font-size:17px;font-weight:600;text-align:center}' +
+      '#canto .c-info span{background:rgba(255,255,255,.14);border-radius:999px;padding:4px 12px}#canto .c-msg{min-height:1.4em;margin:0;font-size:17px;font-weight:600;text-align:center;max-width:100%}#canto.c-turno .c-msg{animation:c-respira 1.2s ease-in-out infinite}' +
+      '#canto .c-notas{display:flex;gap:8px;min-height:16px;justify-content:center;align-items:center}#canto .c-notas[hidden]{display:none}#canto .c-notas i{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.22);box-shadow:inset 0 0 0 2px rgba(255,255,255,.75)}#canto .c-notas i.va{background:#ffd27a;transform:scale(1.3)}#canto .c-notas i.hecha{background:#9df0a2}' +
       '#canto .c-aves{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;width:100%}' +
       '#canto .c-ave{all:unset;box-sizing:border-box;aspect-ratio:1;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;background:var(--c);border:4px solid rgba(255,255,255,.35);box-shadow:0 6px 0 rgba(0,0,0,.25),0 8px 18px rgba(0,0,0,.35);transition:transform .08s,filter .08s;touch-action:manipulation;color:#fff;font-weight:700;font-size:18px;text-shadow:0 1px 3px #0009}' +
       '#canto .c-ave img{width:62%;height:auto;border-radius:50%;background:rgba(255,255,255,.22);box-shadow:inset 0 0 0 3px rgba(255,255,255,.35);pointer-events:none}#canto .c-ave:focus-visible{outline:4px solid #ffd27a;outline-offset:3px}' +
-      '#canto .c-ave.luz{background:var(--l);transform:scale(1.05);box-shadow:0 0 0 6px rgba(255,255,255,.65),0 0 30px var(--l)}#canto .c-ave[aria-disabled="true"]{cursor:default}' +
+      '#canto .c-ave.luz{background:var(--l);transform:scale(1.05);box-shadow:0 0 0 6px rgba(255,255,255,.65),0 0 30px var(--l)}#canto .c-ave[aria-disabled="true"]{cursor:default}#canto .c-ave[aria-disabled="true"]:not(.luz){filter:saturate(.8) brightness(.92)}' +
       '#canto .c-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}#canto .c-bots button{min-height:54px;padding:4px 22px;font:700 18px Fredoka,system-ui,sans-serif;border-radius:22px;border:0;background:#fff3d6;color:#3b2a14;box-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer}' +
       '#canto .c-bots button[hidden]{display:none}#canto .c-bots .c-salir{background:#ffd0c4}#canto .c-bots button:focus-visible{outline:4px solid #ffd27a;outline-offset:2px}' + // PULIR 4: botones como el panel común (.av-bot, ui.css)
       // PULIR 3 (niño de 7 años): tras fallar, «Otra vez» era una píldora crema igual de visible que «Salir»: ahora grande, naranja y respira
       '#canto .c-bots [data-a="otra"]{min-height:60px;padding:8px 28px;font-size:21px;background:#f2a03d;color:#2b1a05;box-shadow:0 4px 0 #b86f1c;animation:c-respira 1.6s ease-in-out infinite}#canto .c-bots [data-a="otra"]::before{content:"\\21BB\\00a0" / "";font-weight:800}' +
       '@keyframes c-respira{50%{transform:scale(1.06)}}@media (prefers-reduced-motion:reduce){#canto .c-bots [data-a="otra"]{animation:none}}' +
-      'body.canto-on :is(#stick,#acts,#v18-exp-poder,#v18-extra,#prompt,#toast,#modo-salir,#quest,#inv,#b-diary,#b-emotes,#b-menu,#b-construir,#b-nido,#minimapa,#marcador,#top,#sys,#guia-hud){visibility:hidden!important}' + // el juego tapa todo: sin HUD detrás (F22: tampoco «Controles»)
+      'body.canto-on :is(#stick,#acts,#v18-exp-poder,#v18-extra,#prompt,#toast,#modo-salir,#quest,#inv,#b-diary,#b-emotes,#b-menu,#b-construir,#b-nido,#minimapa,#marcador,#top,#sys,#guia-hud,#title,#creator,#card){visibility:hidden!important}' + // el juego tapa todo: sin HUD, portada ni creador detrás (F22: tampoco «Controles»)
       // T51: en horizontal (teléfono tumbado) las cuatro en una fila, del tamaño que deja el alto; «Salir» siempre a la vista
       '@media (orientation:landscape) and (max-height:560px){#canto .c-caja{width:min(900px,100%);gap:8px}#canto h2{font-size:21px}#canto .c-msg{min-height:1.2em;margin:0}' +
       '#canto .c-aves{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:min(100%,calc((100dvh - 170px) * 4 + 30px))}#canto .c-ave{border-radius:20px;font-size:15px}#canto .c-bots button{min-height:44px}}' +
-      '@media (prefers-reduced-motion:reduce){#canto .c-ave{transition:none}#canto .c-ave.luz{transform:none}}' +
+      '@media (prefers-reduced-motion:reduce){#canto .c-ave{transition:none}#canto .c-ave.luz{transform:none}#canto.c-turno .c-msg{animation:none}#canto .c-notas i.va{transform:none}}' +
       // PULIR 4 (revisión): título 26 px (21 en horizontal bajo) y mensaje 17 px como el panel común; al terminar, número grande, botones de 54 px y sin las cuatro aves debajo
       '#canto .c-caja:focus{outline:none}#canto.c-fin .c-aves{display:none}#canto.c-fin .c-bots button{min-height:54px}';
     document.head.appendChild(st);
@@ -68,7 +69,7 @@ window.AVCanto = function (G) {
     if (el) return el;
     css();
     el = document.createElement('div'); el.id = 'canto'; el.hidden = true; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'canto-t'); // F22: el lector dice «Sigue el canto»
-    el.innerHTML = '<div class="c-caja av-fin" tabindex="-1"><h2 id="canto-t" data-k="t"></h2><div class="av-num" data-k="num" hidden></div><div class="c-info"><span data-k="ronda"></span><span data-k="mejor"></span></div><p class="c-msg av-msg" data-k="msg" aria-live="polite"></p>' +
+    el.innerHTML = '<div class="c-caja av-fin" tabindex="-1"><h2 id="canto-t" data-k="t"></h2><div class="av-num" data-k="num" hidden></div><div class="c-info"><span data-k="ronda"></span><span data-k="mejor"></span></div><p class="c-msg av-msg" data-k="msg" aria-live="polite"></p><div class="c-notas" data-k="notas" aria-hidden="true"></div>' +
       '<div class="c-aves">' + AVES.map((a, i) => `<button type="button" class="c-ave" data-i="${i}" style="--c:${a.col};--l:${a.luz}"><img src="assets/retratos/v18/${a.r}.png" alt="" width="128" height="128" draggable="false"><span data-k="n${i}"></span></button>`).join('') + '</div>' +
       '<div class="c-bots av-bots"><button type="button" class="av-bot" data-a="otra" hidden></button><button type="button" class="c-salir av-bot salir" data-a="salir"></button></div></div>';
     el.addEventListener('pointerdown', e => {
@@ -89,7 +90,9 @@ window.AVCanto = function (G) {
     q('t').textContent = L('Sigue el canto', 'Follow the song');
     q('ronda').textContent = L('Ronda ', 'Round ') + Math.max(1, E.ronda);
     q('mejor').textContent = L('Récord: ', 'Best: ') + E.mejor; q('mejor').hidden = !E.mejor; // sin «Récord: 0» antes del primer récord (como los demás)
-    el.classList.toggle('c-fin', E.fase === 'fin'); q('num').hidden = E.fase !== 'fin'; q('num').textContent = E.fase === 'fin' ? String(Math.max(0, E.ronda - 1)) : '';
+    el.classList.toggle('c-fin', E.fase === 'fin'); el.classList.toggle('c-turno', E.fase === 'turno');
+    q('num').hidden = E.fase !== 'fin'; q('num').textContent = E.fase === 'fin' ? String(Math.max(0, E.ronda - 1)) : '';
+    notas();
     AVES.forEach((a, i) => { q('n' + i).textContent = L(a.n[0], a.n[1]); });
     if (msg != null) q('msg').textContent = msg;
     const turno = E.fase === 'turno';
@@ -97,18 +100,24 @@ window.AVCanto = function (G) {
     const otra = el.querySelector('[data-a="otra"]'); otra.hidden = E.fase !== 'fin'; otra.textContent = L('Otra vez', 'Play again');
     el.querySelector('[data-a="salir"]').textContent = L('Salir', 'Exit');
   }
-  function luz(i, ms) {
+  function notas(va) {
+    const box = el && el.querySelector('[data-k="notas"]'); if (!box) return;
+    const n = E.sec.length, fin = E.fase === 'fin';
+    box.hidden = fin || !n;
+    box.innerHTML = fin ? '' : Array.from({ length: n }, (_, i) => `<i class="${E.fase === 'turno' && i < E.pos ? 'hecha' : ''}${i === va ? ' va' : ''}"></i>`).join('');
+  }
+  function luz(i, ms, k) {
     const b = el && el.querySelector(`.c-ave[data-i="${i}"]`); if (!b) return;
-    b.classList.add('luz'); sonar('canto' + i);
-    espera(ms, () => b.classList.remove('luz'));
+    b.classList.add('luz'); sonar('canto' + i); if (k != null) notas(k);
+    espera(ms, () => { b.classList.remove('luz'); if (k != null && E.fase === 'escucha') notas(); });
   }
 
   // ---------- Juego ----------
   function cantar() {
-    E.fase = 'escucha'; E.pos = 0; pintar(L('Escucha…', 'Listen…'));
+    E.fase = 'escucha'; E.pos = 0; pintar(L('Escucha y luego toca las mismas', 'Listen, then tap the same ones'));
     const paso = Math.max(330, 620 - E.ronda * 18); // un poco más rápido cada ronda, sin pasarse
-    E.sec.forEach((i, k) => espera(500 + k * paso, () => luz(i, paso * 0.65)));
-    espera(500 + E.sec.length * paso, () => { if (E.fase !== 'escucha') return; E.fase = 'turno'; pintar(L('¡Tu turno!', 'Your turn!')); });
+    E.sec.forEach((i, k) => espera(500 + k * paso, () => luz(i, paso * 0.65, k)));
+    espera(500 + E.sec.length * paso, () => { if (E.fase !== 'escucha') return; E.fase = 'turno'; pintar(L('¡Tu turno! Toca las mismas', 'Your turn! Tap the same ones')); });
   }
   function ronda() { E.ronda++; E.sec.push(sig()); pintar(); cantar(); }
   function nueva() { limpiar(); E.sec = []; E.ronda = 0; E.nuevo = false; ronda(); }
@@ -116,7 +125,7 @@ window.AVCanto = function (G) {
     if (E.fase !== 'turno' || !(i >= 0 && i < 4)) return false;
     luz(i, 220);
     if (i !== E.sec[E.pos]) { fin(); return false; }
-    E.pos++;
+    E.pos++; notas();
     if (E.pos >= E.sec.length) {
       E.fase = 'escucha'; sonar('ring'); pintar(L('¡Bien!', 'Nice!'));
       espera(650, ronda);
