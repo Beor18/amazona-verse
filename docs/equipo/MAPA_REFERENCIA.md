@@ -91,7 +91,7 @@ Capturas SwiftShader, mismo encuadre: `docs/img/mapa_antes_*.png` y `docs/img/ma
 
 ## Lo que no se agrega
 
-- Aves nuevas: las colonias ya vuelan en las 2 mallas de `bandada.js` (mismo draw call). `album.js` exige exactamente esos 9 lugares. Una colonia más rompería la prueba y sería canon.
+- Aves nuevas como colonia del álbum: `album.js` exige exactamente esos 9 lugares. El 26-nov se añadieron 3 cruces de 4 aves en las mismas 2 mallas (`EXTRA`), sin colonia nueva. Capturas: `docs/img/mapa_antes_aves_rio.png` y `docs/img/mapa_despues_aves_rio.png`.
 - El monumento `k187` ya está al lado del camino (26-nov). Capturas: `docs/img/mapa_antes_k187_aire.png`, `mapa_antes_k187_suelo.png`, `mapa_despues_k187_aire.png`, `mapa_despues_k187_suelo.png`.
 - Murallas o templos nuevos: el modelo es grande y el fuerte y la ciudad ya están.
 - Nada en `kelvin_aldea_rio_este` (Villa Raíz): esa zona entra en el cerca del arranque y el puente de la historia es de ahí.
