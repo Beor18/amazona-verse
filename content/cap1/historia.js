@@ -119,6 +119,11 @@
           G.camara.yaw = Math.atan2(-dx, -dz);
           try { G.camara.manual(); G.camara.place(true); } catch (e) { /* sin cámara */ }
         }
+        // Ciclo 6 · vertical: al oír la llamada caen plumas junto a Vittata (en horizontal ya suena flecha).
+        if (!G.quiet && !horizontalCorto && !G.c._ciclo6Llama) {
+          G.c._ciclo6Llama = true;
+          try { if (G.fx && G.fx.burst) G.fx.burst(G.S.pos.x, G.S.pos.y + 0.7, G.S.pos.z, 'feathers', 8); } catch (e) { /* sin efectos */ }
+        }
         if (!G.quiet && horizontalCorto && !G.c._ciclo5H) {
           G.c._ciclo5H = true;
           try { if (G.audio) G.audio.play('flecha'); } catch (e) { /* sin audio */ }

@@ -704,7 +704,9 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   /* Objetivo compacto (QA-06): una sola línea que no tapa el juego; un toque (src/ui/ui.js) despliega capítulo, misiones e
      indicadores y se pliega solo. El inventario queda en una fila fina debajo, a la derecha. */
   #top { gap: 6px; }
-  #quest { position: relative; padding: 7px 34px 9px var(--sp-3); border-radius: var(--r-lg); }
+  #quest { position: relative; padding: 14px 34px 9px var(--sp-3); border-radius: var(--r-lg); }
+  /* Ciclo 6 · 390: la barra de 4 px nacía en el borde redondo y se cortaba. */
+  #steps li::before { top: 6px; }
   #quest .chapter, #missions, #indicators { display: none; }
   #quest:has(#marcador:not([hidden])) .chapter { padding-right: 0; } /* T8: en el teléfono el marcador va debajo del objetivo */
   #steps { margin: 0; padding-top: 10px; }
@@ -716,8 +718,8 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #quest { flex: 1 1 100%; }
   #top #inv, #top:has(#marcador:not([hidden])) #inv { margin-left: 0; margin-right: auto; margin-top: 6px; }
   #pista-vuela { display: inline-block; margin: 6px 0 0; padding: 2px 8px; border-radius: var(--r-pill); background: rgba(242, 160, 61, 0.22); position: relative; z-index: 1; }
-  /* El aviso de la copa (cap. 1) baja bajo el objetivo; el de siempre se queda en 118 px. */
-  body.av-aviso-copa #toast { top: calc(env(safe-area-inset-top, 0px) + 196px); }
+  /* El aviso de la copa (cap. 1) queda bajo los contadores: a 196 px tapaba el camino y la marca roja. */
+  body.av-aviso-copa #toast { top: calc(env(safe-area-inset-top, 0px) + 128px); max-width: calc(100vw - 80px); }
   #steps li.now::after { display: none; }
   #quest.abierto { padding-bottom: var(--sp-3); }
   #quest.abierto #steps { margin-top: 6px; } /* la barra no queda pegada al capítulo (UI v21 P3) */

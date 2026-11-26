@@ -1205,7 +1205,7 @@ window.AV_EN = {
  "hoy no me gustó el mangó.": "today I didn't like the mango.",
  "intento": "attempt",
  "la copa del flamboyán": "the top of the flamboyán tree",
- "la copa del flamboyán de la plaza": "the top of the flamboyán tree in the plaza",
+ "la copa del flamboyán de la plaza": "the top of the flamboyant tree in the plaza",
  "la estrena y ya está en Mi personaje.": "is wearing them and they're already in My character.",
  "la loma": "the hillside",
  "la misión del río": "the river mission",
