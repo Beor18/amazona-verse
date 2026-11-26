@@ -338,11 +338,39 @@
         if (G.quiet || !p || !G.camara || !G.S) return;
         const dx = p.x - G.S.pos.x, dz = p.z - G.S.pos.z, n = Math.hypot(dx, dz) || 1;
         if (G.S.facing) { G.S.facing.x = dx / n; G.S.facing.z = dz / n; }
-        G.camara.yaw = Math.atan2(-dx, -dz);
+        // Al otro lado del taller: +0,55 metía el techo en el encuadre y dejaba al grupo cortado a la derecha.
+        G.camara.yaw = Math.atan2(-dx, -dz) - 0.32;
+        G.camara.inclina = 0.1;
         try { G.camara.manual(); G.camara.place(true); } catch (e) { /* sin cámara */ }
       };
-      mirar(centro); // los seis quedaban a la espalda: la cámara miraba el agua vacía
-      G.dialogo.say(lineasInicio(G), () => { mirar(centro); G.ui.toast('Baja a los muelles y recibe a quien llega', 3000); });
+      if (!document.getElementById('ep6-ciclo4')) {
+        const st = document.createElement('style'); st.id = 'ep6-ciclo4';
+        st.textContent = '@media (max-width:560px){body.av-ep6 #toast{top:calc(env(safe-area-inset-top, 0px) + 86px);max-width:min(280px, calc(100vw - 96px))}}';
+        document.head.appendChild(st);
+      }
+      document.body.classList.add('av-ep6');
+      mirar(centro); // los seis quedaban a la espalda: la cámara miraba el agua vacía. El taller no se mueve.
+      G.dialogo.say(lineasInicio(G), () => {
+        mirar(centro);
+        G.ui.toast('Baja a los muelles y recibe a quien llega', 3000);
+        // El grupo saluda con un saltito. Las estrellas lejanas del arranque se quedan.
+        try { if (G.audio && G.audio.play) G.audio.play('aleteo'); } catch (e) { /* sin audio */ }
+        const t0 = performance.now();
+        let ya = false;
+        if (!G.quiet) G.on('update', () => {
+          const k = (performance.now() - t0) / 1000;
+          if (k > 2.4) {
+            if (ya) return;
+            ya = true;
+          }
+          for (const v of VISITANTES) {
+            const n = G.actores && G.actores.npc && G.actores.npc(v.id);
+            if (!n || !n.sp) continue;
+            const base = G.terreno.height(v.x, v.z) + 1;
+            n.sp.position.y = ya ? base : base + Math.abs(Math.sin(k * 7 + v.x)) * 0.35;
+          }
+        }, 44);
+      });
       // Las luces del horizonte saludan al empezar: estrellas lejos de la cámara y el aviso de Suno.
       try {
         const quieto = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
