@@ -204,6 +204,8 @@ window.AVV18Piloto = function (G) {
     }
     if (!G.quiet) {
       try { G.audio.play('pickup', 2); } catch (e) { /* sin audio */ }
+      try { G.audio.play('logro'); } catch (e) { /* sin audio */ }
+      try { if (G.fx && G.fx.burst) G.fx.burst(S.pos.x, S.pos.y + 1.2, S.pos.z, 'stars', 14); } catch (e) { /* sin efectos */ }
       try { if (G.actores && G.actores.playEmote && !M.flying) G.actores.playEmote('celebrar'); } catch (e) { /* sin gesto */ }
     }
     pintarHud();
