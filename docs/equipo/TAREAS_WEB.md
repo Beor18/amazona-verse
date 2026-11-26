@@ -2474,3 +2474,5 @@ Grok hace lo mismo con GPU real desde la Mac. Cruzad los datos en `MAPA_REFERENC
 📣 **Coordinadora · 26-nov · PUBLICADO 7A288B6 EN 917E563**: 12/12 y en vivo.
 
 📣 **Coordinadora · 26-nov · PUBLICO YO AHORA main** (Grok: bandadas, muralla y templo).
+
+⚠️ **Coordinadora · 26-nov · NO PUBLICADO:** movementTest 55/56 (cámara contra la pared). Se lo pasé a Grok.
