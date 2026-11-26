@@ -584,7 +584,7 @@
     function prepararCreador() {
       if (!creador) return;
       creador.classList.add('creator-corto');
-      const b = $('p-save'); if (b) { if (!b.dataset.txt0) b.dataset.txt0 = b.textContent; b.textContent = TX().listo; }
+      const b = $('p-save'); if (b) { if (!b.dataset.txt0) b.dataset.txt0 = b.textContent; b.textContent = '¡A jugar!'; }
       if (creador.hidden) G.creador.open(true);
     }
     function soltarCreador() {
@@ -592,6 +592,7 @@
       creador.classList.remove('creator-corto');
       const b = $('p-save'); if (b && b.dataset.txt0) { b.textContent = b.dataset.txt0; delete b.dataset.txt0; }
     }
+    if (G.on) G.on('aula', k => { if (k === 'idioma' && creador && creador.classList.contains('creator-corto')) { const b = $('p-save'); if (b) b.textContent = '¡A jugar!'; } });
     if (creador) {
       let visible = !creador.hidden;
       new MutationObserver(() => {

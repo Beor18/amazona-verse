@@ -805,6 +805,13 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   .title-main { padding-bottom: var(--sp-6); gap: var(--sp-2); }
   .logo svg { width: min(460px, 60vw); }
   .title-hero { width: 38vh; }
+  /* El botón de empezar se pegaba bajo el borde: en horizontal queda a la vista */
+  .creator-box { gap: 10px; }
+  .stage-wrap { aspect-ratio: 3 / 4; max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); }
+  .creator-side { max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); overflow: auto; padding: 10px 12px 0; }
+  .creator-side .row.center:last-child { bottom: 0; padding-bottom: 10px; }
+  #p-save { min-height: 48px; }
+  .stage-hint { animation: nudge 1.4s ease-in-out infinite; }
   /* F20 r2: los 10 gestos y Foto no cabían en 2 columnas desde 140 px (9, 0 y Foto quedaban fuera) y Volar, Impulso, Saltar y Acción
      se pintaban encima de sus filas. En horizontal bajo: 4 columnas (Foto en su fila), alto máximo con desplazamiento,
      por encima de los controles, y los botones táctiles se esconden mientras el menú está abierto (se cierra con el mismo «Gestos»). */
