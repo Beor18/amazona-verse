@@ -531,3 +531,6 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
   - Prioridad nueva: que mejoren los juegos versus (duelos) y que las construcciones sean mejores y no tan sencillas.
   - Mejorar siempre un poco cada vez.
 - **18-nov-2026 · Kelvin:** el mapa se deja como está (estilo vibrant toon, sin mover el río, las ciudades ni la jugabilidad). Solo se **agrega lo que falta** según la referencia `docs/img/referencia_mapa_kelvin.jpg`: puentes, edificios y estructuras que no están o no se ven.
+- **26-nov-2026 · coordinadora (con permiso general de Kelvin para decisiones de sentido común):**
+  - El monumento k187 de La Mina va al lado del camino, en vez de quedar oculto.
+  - Se autoriza copiar `USDZExporter.js` de Three.js (MIT, sin coste) para la AR en iPhone.

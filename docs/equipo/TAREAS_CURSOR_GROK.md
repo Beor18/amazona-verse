@@ -504,3 +504,23 @@ Todo lo de la nota «ÚLTIMA NOCHE» vale, con estos cambios:
 📣 Grok → coordinadora · 25-nov 20:02 AST · B1 inventario hecha · d822c594 · `docs/equipo/MAPA_REFERENCIA.md`: 14 asentamientos, banderas sin esconder el mapa, dos puentes apartados del río (k367 y k368) y k187 sigue oculto porque el modelo taparía el camino. Siguiente: los puentes y las piezas en sitios libres.
 📣 Grok → coordinadora · 25-nov 20:30 AST · B1 puentes y edificios · 03b9d9f6 · dos puentes de madera en los huecos de k367 y k368, dos canoas y bohíos/torre en sitios libres de aldeas que ya existían. Sin Villa Raíz, sin caminos movidos, mismos modelos. Las 12 en verde en b1-puentes-03b9d9f, 0 errores. Arranque 112 llamadas y 48,9 MB, igual que antes.
 📣 Grok → coordinadora · 25-nov 20:42 AST · B1 capturas · este commit · docs/img/mapa_antes_*.png y mapa_despues_*.png (SwiftShader). Los dos puentes se ven cruzando el río. Bloque 1 cerrado. k187 y las aves nuevas quedan fuera, anotados en MAPA_REFERENCIA.md.
+
+---
+## 🌙 Coordinadora → Grok · 26-nov · Muy bien. SIGUE: no pares hasta que venza Cursor
+Kelvin no quiere que le preguntes nada: las decisiones de sentido común las tomo yo y quedan aquí. **Publico yo ahora** lo de los bloques 1–3. Mientras, sigue con esto, en orden:
+1. **Monumento de La Mina (k187).** Decisión: ponlo **al lado** del camino, desplazado lo justo para que no lo tape (el sitio libre más cercano, de cara al camino), en vez de dejarlo oculto. Comprueba que el camino y los objetivos siguen libres y saca captura.
+2. **Bandadas de aves:** 2–3 bandadas pequeñas que crucen el cielo sobre el río y las aldeas. Que sean baratas (instancias o sprites) y que no suban los draw calls de arranque.
+3. **Murallas y templo** de la referencia: con modelos que ya existen, en sitios libres de los asentamientos que ya hay (fuerte de piedra y templo gris). Sin mover nada.
+4. **AR en iPhone (USDZ).**
+   - **Autorizado (decisión mía, sin coste):** copia al repo el `USDZExporter.js` de Three.js, que es licencia MIT. Ponlo en `src/vendor/` con su licencia y adáptalo a r128, o escribe un exportador mínimo propio.
+   - Genera `assets/ar/vittata.usdz` con el modelo y la textura tal cual. Que pese 5 MB como mucho.
+   - En iPhone, con `?ar=1`, un botón «Ver en tu casa» que abra AR Quick Look (`<a rel="ar">`).
+   - arTest sigue en verde. Anota la licencia en el registro.
+5. **Más vida en AR (Android):**
+   - Vittata se puede llevar con un dedo, se gira con dos y se puede volver a colocar.
+   - Si el niño se acerca, se asusta un poco, de forma cómica.
+   - Una semilla que se le lanza con un toque y ella la atrapa.
+   - Todo con los sfx de Suno.
+6. **Pulido general:** recorre en 390×844 los caps. 1 y 2 y «Más juegos». Arregla lo que se vea cortado, tapado o sin traducir (EN). Commits pequeños.
+
+Después de cada 2 tareas, deja una nota aquí. Yo publico cuando vea 2–3 cerradas.
