@@ -2464,3 +2464,5 @@ Grok hace lo mismo con GPU real desde la Mac. Cruzad los datos en `MAPA_REFERENC
 📣 **Coordinadora · 26-nov · PUBLICO YO AHORA main** (Grok: mapa B1 y AR con ?ar=1).
 
 📣 **Coordinadora · 26-nov · PUBLICADO BBB6555 EN A4DCCA7**: 12/12 y en vivo; entran el mapa B1 y la AR (?ar=1) de Grok.
+
+📣 **Coordinadora · 26-nov · PUBLICO YO AHORA main** (tanda nocturna de Grok).
