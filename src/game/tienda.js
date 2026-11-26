@@ -353,10 +353,13 @@ window.AVTienda = function (G) {
     });
     cardEl.addEventListener('keydown', ev => {
       if (!abierta() || (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight')) return;
-      const b = ev.target.closest && ev.target.closest('[data-tn="cat"]'); if (!b) return;
+      if (ev.altKey || ev.ctrlKey || ev.metaKey) return;
+      if (ev.target.closest && ev.target.closest('input, textarea, select')) return;
+      if (!(ev.target.closest && ev.target.closest('#tienda'))) return;
       ev.preventDefault();
-      const otro = b.dataset.id === 'piezas' ? 'ropa' : 'piezas';
-      const n = $('tienda') && $('tienda').querySelector(`[data-tn="cat"][data-id="${otro}"]`);
+      // Izquierda: Ropa. Derecha: Piezas. También vale si el foco está en un artículo, no solo en la pestaña (QA-249).
+      const id = ev.key === 'ArrowLeft' ? 'ropa' : 'piezas';
+      const n = $('tienda') && $('tienda').querySelector(`[data-tn="cat"][data-id="${id}"]`);
       if (n) { n.click(); try { n.focus({ preventScroll: true }); } catch (e) { /* sin foco */ } }
     });
     cardEl.addEventListener('click', ev => {
@@ -517,6 +520,9 @@ window.AVTienda = function (G) {
       bPie.focus(); bPie.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
       bPie.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft', bubbles: true }));
       check('Con el teclado, la flecha cambia de Piezas a Ropa', document.activeElement === bRopa && bRopa.getAttribute('aria-pressed') === 'true' && bPie.getAttribute('aria-pressed') === 'false');
+      const bArt = $('tienda').querySelector('[data-tn="probar"],[data-tn="comprar"]');
+      if (bArt) { bArt.focus(); bArt.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })); }
+      check('QA-249: la flecha cambia de categoría aunque el foco esté en un artículo', document.activeElement === bPie && bPie.getAttribute('aria-pressed') === 'true', document.activeElement && document.activeElement.dataset && document.activeElement.dataset.id);
       const bPro = $('tienda').querySelector('[data-tn="probar"][data-id="sombrero_rio"]');
       check('La ropa sin comprar tiene «Probar»', !!bPro && bPro.textContent.trim() === 'Probar', bPro ? bPro.textContent : 'sin botón');
       if (bPro) bPro.click();
