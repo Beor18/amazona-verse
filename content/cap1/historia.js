@@ -111,11 +111,20 @@
           try { if (G.fx && G.fx.burst) G.fx.burst(per.x, y + 1.1, per.z, 'stars', 12); } catch (e) { /* sin efectos */ }
           try { if (G.audio && G.audio.has && G.audio.has('nido_chispa')) G.audio.play('nido_chispa'); } catch (e) { /* sin audio */ }
         }
-        if (!G.quiet && per && G.camara && G.S) {
+        // En 844×390 ese giro deja a Vittata fuera del cuadro. En vertical se sigue mirando a la copa.
+        const horizontalCorto = !!(window.matchMedia && matchMedia('(max-height: 520px) and (orientation: landscape)').matches);
+        if (!G.quiet && per && G.camara && G.S && !horizontalCorto) {
           const dx = per.x - G.S.pos.x, dz = per.z - G.S.pos.z, n = Math.hypot(dx, dz) || 1;
           if (G.S.facing) { G.S.facing.x = dx / n; G.S.facing.z = dz / n; }
           G.camara.yaw = Math.atan2(-dx, -dz);
           try { G.camara.manual(); G.camara.place(true); } catch (e) { /* sin cámara */ }
+        }
+        if (!G.quiet && horizontalCorto && !G.c._ciclo5H) {
+          G.c._ciclo5H = true;
+          try { if (G.audio) G.audio.play('flecha'); } catch (e) { /* sin audio */ }
+          try { if (G.fx && G.fx.burst) G.fx.burst(G.S.pos.x, G.S.pos.y + 0.9, G.S.pos.z, 'gold', 8); } catch (e) { /* sin efectos */ }
+          const fly = document.getElementById('b-fly');
+          if (fly) { fly.classList.add('ciclo5-invita'); setTimeout(() => fly.classList.remove('ciclo5-invita'), 3600); }
         }
         // PULIR 7 (ronda 2): es { fijo }, así que volvía a la cola cada vez que un diálogo lo apartaba y salía con el paso 0 ya hecho
         // (tres veces más tras hablar con Iguaca, y tapaba las instrucciones de En familia). En cuanto el paso «luma» queda atrás
