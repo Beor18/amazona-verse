@@ -220,7 +220,7 @@ window.AVV18Piloto = function (G) {
     F.t += dt;
     const m = F.marcas[F.paso];
     if (m && llegar(m)) {
-      if (!G.quiet) { try { G.fx.burst(m.x, m.y, m.z, m.tipo === 'nube' ? 'white' : 'gold', 10); } catch (e) { /* sin fx */ } try { G.audio.play('tick'); } catch (e) { /* sin audio */ } }
+      if (!G.quiet) { try { G.fx.burst(m.x, m.y, m.z, m.tipo === 'nube' ? 'stars' : 'gold', 10); } catch (e) { /* sin fx */ } try { G.audio.play(m.tipo === 'nube' ? 'aviso' : 'tick'); } catch (e) { /* sin audio */ } }
       F.paso++;
       if (F.paso >= F.marcas.length) completar(); else pintarHud();
     }
@@ -251,7 +251,8 @@ window.AVV18Piloto = function (G) {
       '#pil-hud button.pil-l{padding:0;width:44px}#pil-hud button.pil-l.hecha{background:#ffe27a}#pil-hud button.pil-l[aria-current="true"]{outline:3px solid #7fd25a;outline-offset:1px}' +
       '#pil-hud button.pil-salir{background:#ffd0c4;padding:4px 16px}#pil-hud button:focus-visible{outline:3px solid #fff;outline-offset:2px}' +
       '#pil-bajar{position:fixed;z-index:8;width:64px;height:64px;border-radius:50%;border:0;background:rgba(255,243,214,.92);color:#3b2a14;font:700 14px Fredoka,system-ui,sans-serif;box-shadow:0 3px 10px rgba(0,0,0,.3);touch-action:none;user-select:none;-webkit-user-select:none}#pil-bajar[hidden]{display:none}#pil-bajar.on{background:#ffe27a}' +
-      'body.piloto-on :is(#quest,#inv,#inv-cuenta,#modo-salir,#b-construir,#toast,#prompt,#minimapa,#v18-exp-poder,#v18-extra,#rio-visor){visibility:hidden!important}'; // el HUD de la escuela dice lo que toca (y el haz guía): nada debajo ni encima
+      'body.piloto-on :is(#quest,#inv,#inv-cuenta,#modo-salir,#b-construir,#toast,#prompt,#minimapa,#v18-exp-poder,#v18-extra,#rio-visor){visibility:hidden!important}' +
+      '@media (max-width:560px){#pil-hud{left:max(12px,env(safe-area-inset-left,0px));transform:none;width:min(560px,calc(100vw - 84px))}}'; // 390×844: la columna de Diario y Pausa no tapa «Salir»
     document.head.appendChild(st);
     hudEl = document.createElement('div'); hudEl.id = 'pil-hud'; hudEl.hidden = true; hudEl.setAttribute('role', 'region');
     hudEl.innerHTML = '<div class="pil-t"><b data-k="t"></b><span class="pil-reloj" data-k="reloj"></span></div><div class="pil-pista" data-k="pista" role="status" aria-live="polite"></div><div class="pil-bots">' +
@@ -364,6 +365,7 @@ window.AVV18Piloto = function (G) {
         bs.map(b => Math.round(rect(b).width) + 'x' + Math.round(rect(b).height)).join(' '));
       const choca = ['minimapa', 'inv-cuenta', 'quest', 'toast', 'v18-exp-poder'].filter(id => { const el = document.getElementById(id); if (!el || el.hidden || getComputedStyle(el).visibility === 'hidden') return false; const a = rect(el), h = rect(hudEl); return a.width > 0 && a.left < h.right && a.right > h.left && a.top < h.bottom && a.bottom > h.top; });
       ok('HUD: no tapa el minimapa, la patrulla, la misión ni avisos (se esconden mientras dura)', !choca.length, choca.join(','));
+      ok('HUD estrecho: a 560 px deja la columna de botones libre', /100vw - 84px/.test(document.getElementById('pil-css').textContent) && (innerWidth > 560 || rect(hudEl).right <= (document.getElementById('b-menu') ? document.getElementById('b-menu').getBoundingClientRect().left + 1 : innerWidth)), Math.round(rect(hudEl).right));
       ok('HUD: dice qué hacer, el tiempo y «Salir»', /nube|cloud/i.test(hudEl.textContent) && /0:0/.test(hudEl.textContent) && /Salir|Exit/.test(hudEl.querySelector('[data-a="salir"]').textContent), hudEl.textContent.slice(0, 120));
       ok('Sin anillos: las marcas son nubes, hojas o una percha (sprites)', LEC.every((l, i) => { leccion(i, { mismoSitio: true }); return F.marcas.length > 0 && F.marcas.every(m => ['nube', 'hoja', 'percha'].includes(m.tipo)); }) && (!grupo || grupo.children.every(c => c.type === 'Sprite')));
       ok('Las marcas en el aire van por encima de lo que hay debajo (terreno, tejados, copas)', LEC.every((l, i) => { leccion(i, { mismoSitio: true }); return F.marcas.every(m => m.tipo === 'percha' || m.y > techo(m.x, m.z) + 1.5); }));
