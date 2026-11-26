@@ -644,7 +644,7 @@ window.AVSembradora = function (G) {
     finEl.hidden = true; q(hudEl, 'msg').textContent = '';
     document.body.classList.add('sembradora-on'); document.body.classList.remove('sembradora-fin');
     apuntarGuia(); predecir(P); pintarHud(); pintar(); verHud();
-    avisoL('Vuela sobre la tierra oscura y suelta una semilla cuando el aro blanco la pise', 'Fly over the dark soil and drop a seed when the white ring is on it', 'bien'); E.msgT = 4;
+    avisoL('Vuela sobre la tierra oscura. Suelta en el aro.', 'Fly over the dark soil. Drop on the ring.', 'bien'); E.msgT = 4;
     hojas(S.pos.x, S.pos.y + 0.4, S.pos.z, 12);
     sonar('boton');
     return true;
