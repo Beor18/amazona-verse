@@ -657,7 +657,8 @@ body:has(#title[open]) :is(#stick, #acts, #prompt, #sys, #top, #emotes, #keyhint
 .thumb:hover { border-color: rgba(244, 247, 241, 0.4); transform: translateY(-2px); }
 .thumb:active { transform: scale(0.94); }
 .thumb img { width: 100%; height: 100%; object-fit: contain; border-radius: var(--r-sm); }
-.thumb[aria-pressed="true"] { border-color: var(--gold); background: #2c4a37; box-shadow: 0 0 0 3px rgba(255, 210, 122, 0.3); color: var(--c-text); }
+.thumb[aria-pressed="true"] { border-color: var(--gold); background: #2c4a37; box-shadow: 0 0 0 3px rgba(255, 210, 122, 0.3); color: var(--c-text); animation: thumb-elige .45s ease; }
+@keyframes thumb-elige { 45% { transform: translateY(-6px) scale(1.08); } }
 .thumb[aria-pressed="true"]::after { content: ""; position: absolute; right: -6px; top: -6px; width: 20px; height: 20px; border-radius: 50%; background: var(--i-check) center / 13px no-repeat, var(--gold); box-shadow: 0 0 0 2px var(--c-surface-solid); }
 .styles { display: flex; gap: 6px; flex-wrap: wrap; }
 .swatches { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -703,7 +704,9 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   /* Objetivo compacto (QA-06): una sola línea que no tapa el juego; un toque (src/ui/ui.js) despliega capítulo, misiones e
      indicadores y se pliega solo. El inventario queda en una fila fina debajo, a la derecha. */
   #top { gap: 6px; }
-  #quest { position: relative; padding: 7px 34px 9px var(--sp-3); border-radius: var(--r-lg); }
+  #quest { position: relative; padding: 14px 34px 9px var(--sp-3); border-radius: var(--r-lg); }
+  /* Ciclo 6 · 390: la barra de 4 px nacía en el borde redondo y se cortaba. */
+  #steps li::before { top: 6px; }
   #quest .chapter, #missions, #indicators { display: none; }
   #quest:has(#marcador:not([hidden])) .chapter { padding-right: 0; } /* T8: en el teléfono el marcador va debajo del objetivo */
   #steps { margin: 0; padding-top: 10px; }
@@ -715,8 +718,8 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #quest { flex: 1 1 100%; }
   #top #inv, #top:has(#marcador:not([hidden])) #inv { margin-left: 0; margin-right: auto; margin-top: 6px; }
   #pista-vuela { display: inline-block; margin: 6px 0 0; padding: 2px 8px; border-radius: var(--r-pill); background: rgba(242, 160, 61, 0.22); position: relative; z-index: 1; }
-  /* El aviso de la copa (cap. 1) baja bajo el objetivo; el de siempre se queda en 118 px. */
-  body.av-aviso-copa #toast { top: calc(env(safe-area-inset-top, 0px) + 196px); }
+  /* El aviso de la copa (cap. 1) queda bajo los contadores: a 196 px tapaba el camino y la marca roja. */
+  body.av-aviso-copa #toast { top: calc(env(safe-area-inset-top, 0px) + 128px); max-width: calc(100vw - 80px); }
   #steps li.now::after { display: none; }
   #quest.abierto { padding-bottom: var(--sp-3); }
   #quest.abierto #steps { margin-top: 6px; } /* la barra no queda pegada al capítulo (UI v21 P3) */
@@ -833,13 +836,20 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   .title-main { padding-bottom: var(--sp-6); gap: var(--sp-2); }
   .logo svg { width: min(460px, 60vw); }
   .title-hero { width: 38vh; }
-  /* El botón de empezar se pegaba bajo el borde: en horizontal queda a la vista */
-  #creator { display: flex; align-items: center; justify-content: center; }
-  .creator-box { gap: 10px; height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); align-items: stretch; overflow: hidden; }
-  .stage-wrap { aspect-ratio: 3 / 4; max-height: 100%; }
-  .creator-side { max-height: 100%; overflow: auto; padding: 10px 12px 0; }
-  .creator-side .row.center:last-child { bottom: 0; padding-bottom: 4px; }
-  #p-save { min-height: 44px; }
+  /* 100dvh puede ser más alto que la pantalla y «Guardar» se salía. */
+  #creator { display: flex; align-items: stretch; justify-content: center; padding: 4px; box-sizing: border-box; overflow: hidden; }
+  .creator-box { gap: 8px; height: calc(100vh - 8px); max-height: calc(100vh - 8px); min-height: 0; align-items: stretch; overflow: hidden; margin: 0 auto; animation: none; }
+  .stage-wrap { aspect-ratio: auto; height: 100%; max-height: 100%; min-height: 0; }
+  .creator-side { max-height: 100%; min-height: 0; overflow: auto; gap: 0; padding: 2px 8px 0; }
+  .creator-side .lbl { margin-top: 0; font-size: 10px; line-height: 1.1; }
+  .creator-side input, .creator-side select, #p-name-azar, #p-tienda { min-height: 44px; padding-top: 0; padding-bottom: 0; }
+  #p-name { margin-top: 0; font-size: 18px; }
+  #p-tienda { margin-bottom: 0; }
+  #p-slots { gap: 2px; max-height: 64px; overflow-y: auto; }
+  .slot { padding: 0 2px; gap: 2px; }
+  .thumb { width: 48px; height: 48px; }
+  .creator-side .row.center:last-child { bottom: 0; margin: 0 -8px 0; padding: 2px 8px; background: var(--c-surface-solid); }
+  #p-save, #p-cancel { min-height: 44px; }
   .stage-hint { animation: nudge 1.4s ease-in-out infinite; }
   /* F20 r2: los 10 gestos y Foto no cabían en 2 columnas desde 140 px (9, 0 y Foto quedaban fuera) y Volar, Impulso, Saltar y Acción
      se pintaban encima de sus filas. En horizontal bajo: 4 columnas (Foto en su fila), alto máximo con desplazamiento,
@@ -853,6 +863,14 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #toast { min-height: 0; padding: 8px 14px 8px 52px; font-size: calc(14px * var(--fs-k, 1)); line-height: 1.3; }
   #toast::before { left: 10px; width: 32px; height: 32px; margin-top: -16px; background-size: 18px, auto; }
   body:has(#quest:not([hidden])) #toast { left: calc(max(var(--sp-3), env(safe-area-inset-left, 0px)) + 308px); right: auto; margin-inline: 0; width: fit-content; max-width: min(280px, calc(100vw - 520px)); }
+  /* Ciclo 5b · 844×390, inglés: ese aviso (Iguaca, varias líneas, 280 px) nacía en el hueco y tapaba el contador de madera. Baja bajo el objetivo, en su columna. */
+  body.av-aviso-copa:has(#inv .res:not([hidden])) #toast {
+    top: calc(env(safe-area-inset-top, 0px) + 172px);
+    left: max(var(--sp-3), env(safe-area-inset-left, 0px));
+    right: auto; margin-inline: 0;
+    width: min(300px, calc(100vw - 360px));
+    max-width: min(300px, calc(100vw - 360px));
+  }
   #modo-salir { top: calc(env(safe-area-inset-top, 0px) + 92px) !important; }
   /* F20 r2: en los minijuegos del mundo, la barra del juego, su panel final y sus pistas tapaban «Diario» y «Gestos» (se veía «iario 0/13»).
      Mientras dura el minijuego no hacen falta: se quedan Pausa y los controles. */
