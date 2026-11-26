@@ -301,7 +301,18 @@
     },
 
     continuidad, // D11: líneas que dependen de lo elegido en capítulos anteriores ([] sin dato)
-    inicio(G) { G.eventos.log('BlueprintShared'); G.dialogo.say(G.dialogo.L('inicio:ep3').concat(continuidad()), () => G.ui.toast('Baja al astillero y habla con el papá', 3000)); },
+    inicio(G) {
+      G.eventos.log('BlueprintShared');
+      const mirar = p => {
+        if (G.quiet || !p || !G.camara || !G.S) return;
+        const dx = p.x - G.S.pos.x, dz = p.z - G.S.pos.z, n = Math.hypot(dx, dz) || 1;
+        if (G.S.facing) { G.S.facing.x = dx / n; G.S.facing.z = dz / n; }
+        G.camara.yaw = Math.atan2(-dx, -dz);
+        try { G.camara.manual(); G.camara.place(true); } catch (e) { /* sin cámara */ }
+      };
+      mirar(PAPA); // el papá y el astillero quedaban fuera del encuadre
+      G.dialogo.say(G.dialogo.L('inicio:ep3').concat(continuidad()), () => { mirar(PAPA); G.ui.toast('Baja al astillero y habla con el papá', 3000); });
+    },
 
     preparar(G) {
       const S = G.S, H = G.terreno.height, L = G.dialogo.L, scene = G.renderer.scene;
@@ -565,6 +576,7 @@
           const P = piezas[m.id]; if (!P.base) continue;
           if (P.t < 1) { P.t = Math.min(1, P.t + dt * 1.2); P.mesh.position.y = P.y0 + (P.base.y - P.y0) * P.t; }
           else if (m.flota && tiene('probado_' + m.id) && !quieto) P.mesh.position.y = P.base.y + Math.sin(t * 2 + m.z) * 0.04;
+          else if (!tiene('probado_' + m.id) && !quieto) P.mesh.position.y = P.base.y + Math.sin(t * 1.5 + m.z) * 0.035;
         }
         if (semillaT >= 0) {
           semillaT = Math.min(1, semillaT + dt / 4);
