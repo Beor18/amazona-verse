@@ -152,6 +152,7 @@ AVE.module('lugares', function (G) {
   const enV18 = () => {
     try {
       return !!(G.menuModos && G.menuModos.ocupado && G.menuModos.ocupado()) || /\bv18-(duelo|amenaza|golf)-on\b/.test(document.body.className) ||
+        document.body.classList.contains('piloto-on') ||
         !!(G.v18descubrir && G.v18descubrir.R && G.v18descubrir.R.activo);
     } catch (e) { return false; }
   };
