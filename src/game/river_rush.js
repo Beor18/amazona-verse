@@ -362,7 +362,7 @@
       while (filas.length && filas[0].s < J.s - P.largo - 4) reciclarFila(filas.shift());
       for (let k = racimos.length - 1; k >= 0; k--) {
         const r = racimos[k];
-        if (!r.cogido && Math.abs(r.s - J.s) < P.largo + 0.2 && Math.abs(r.l - J.lado) < P.ancho + P.radioRacimo) { r.cogido = true; J.racimos++; sonar(G.audio && G.audio.has && G.audio.has('bq_fruto') ? 'bq_fruto' : 'tick', J.racimos); st.pop = 0.25; }
+        if (!r.cogido && Math.abs(r.s - J.s) < P.largo + 0.2 && Math.abs(r.l - J.lado) < P.ancho + P.radioRacimo) { r.cogido = true; J.racimos++; sonar(G.audio && G.audio.has && G.audio.has('bq_fruto') ? 'bq_fruto' : 'tick', J.racimos); st.pop = 0.25; if (!G.quiet) { try { if (G.fx && G.fx.burst) G.fx.burst(S.pos.x, S.pos.y + 0.8, S.pos.z, 'gold', 8); } catch (e) { /* sin fx */ } } }
         if (r.cogido || r.s < J.s - P.largo - 3) { esconder('racimo', r.i); soltar('racimo', r.i); racimos.splice(k, 1); }
       }
       contar();
@@ -685,7 +685,14 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
 #riverrush .rr-panel .rr-modos { margin-top: 12px; }
 @media (max-height: 520px) { #riverrush .rr-modos-hud { top: calc(env(safe-area-inset-top, 0px) + 66px); } #riverrush .rr-panel { padding: 14px 18px; } #riverrush .rr-num { font-size: 34px; } }
 /* F20 r2: teléfono en horizontal: la ayuda caía encima de Vittata y la canoa; sube bajo los botones de modo */
-@media (orientation: landscape) and (max-height: 520px) { #riverrush .rr-pista { bottom: auto; top: 31%; font-size: 22px; } }
+@media (max-width: 420px) {
+  #riverrush .rr-modos button { font-size: 14px; padding: 6px 10px; }
+  #riverrush .rr-pista { bottom: auto; top: calc(env(safe-area-inset-top, 0px) + 128px); width: calc(100vw - 24px); font-size: 16px; padding: 8px 12px; }
+  #riverrush .rr-pista small { font-size: 13px; }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  #riverrush .rr-pista { bottom: auto; top: calc(env(safe-area-inset-top, 0px) + 118px); width: min(520px, calc(100vw - 160px)); font-size: 16px; }
+}
 @media (prefers-reduced-motion: reduce) { #riverrush .rr-pista, #riverrush .rr-mano, #riverrush .rr-chip.pop, #riverrush .rr-aviso.pop { animation: none; } }`;
     function montarUI() {
       if (st.ui) return st.ui;
@@ -747,7 +754,7 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
     }
     function arrastrar(x) { if (!J.arr || st.fase === 'fin') return; const w = (R.renderer && R.renderer.domElement && R.renderer.domElement.clientWidth) || window.innerWidth || 1; J.objetivo = J.arr.l0 + (x - J.arr.x0) / w * P.arrastre; }
     // ---------- Modalidades: botones, cambio y textos ----------
-    const NOMBRE_MODO = { puntos: 'Clásico', reloj: 'Contrarreloj', fantasma: 'Contra tu fantasma' };
+    const NOMBRE_MODO = { puntos: 'Clásico', reloj: 'Contrarreloj', fantasma: TACTIL ? 'Fantasma' : 'Contra tu fantasma' };
     function botonesModo() { return MODOS.map(m => `<button class="btn ghost secondary" type="button" data-rr-modo="${m}" aria-pressed="false">${NOMBRE_MODO[m]}</button>`).join(''); }
     function pintarModos() {
       const u = st.ui; if (!u) return;
@@ -758,11 +765,12 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
       }
       u.modos.hidden = st.fase !== 'listo';
       const PISTA = {
-        puntos: [TACTIL ? '¡Arrastra para guiar la canoa!' : '¡Usa ← → para guiar la canoa!', TACTIL ? 'Desliza el dedo a un lado o al otro. Esquiva troncos y rocas y recoge racimos.' : 'También A y D, o arrastra con el ratón. Esquiva troncos y rocas y recoge racimos.'],
+        puntos: [TACTIL ? '¡Arrastra a los lados!' : '¡Usa ← → para guiar la canoa!', TACTIL ? 'Esquiva y recoge racimos.' : 'También A y D, o arrastra con el ratón. Esquiva troncos y rocas y recoge racimos.'],
         reloj: ['¡Contrarreloj hasta el mar!', 'Chocar no termina, pero frena la canoa. El río es siempre el mismo: apréndetelo.'],
         fantasma: ['¡Contra tu fantasma!', 'La cotorra transparente es tu mejor bajada. ¡Gánale hasta el mar!'],
       }[st.modo];
       u.pistaT.textContent = PISTA[0]; u.pistaS.textContent = PISTA[1];
+      const salir = u.el.querySelector('[data-salir]'); if (salir) { salir.textContent = ingles() ? 'Exit' : 'Salir'; salir.setAttribute('aria-label', ingles() ? 'Exit River Rush' : 'Salir de River Rush'); }
     }
     function cambiarModo(m) {
       if (!MODOS.includes(m) || !st.activo) return false;
