@@ -257,12 +257,13 @@ AVE.module('fx', function (G) {
     const r = Math.min(1.6, Math.max(0.2, dCam * 0.014));
     guideBeam.scale.set(r / 0.7, 1, r / 0.7);
     guideBeam.visible = cerca > 0.01;
-    guideBeam.material.opacity = (0.16 + Math.sin(now * 3) * 0.06) * cerca * (relajado ? 1.8 : 1);
+    // El haz aditivo, a 390, se veía como una columna blanca delante de Iguaca. Sigue siendo una pista, más fina.
+    guideBeam.material.opacity = (0.07 + Math.sin(now * 3) * 0.025) * cerca * (relajado ? 1.8 : 1);
     const d = Math.hypot(tg.x - S.pos.x, tg.z - S.pos.z);
     if (d > (relajado ? 1.5 : 4)) {
       guideArrow.visible = true; guideArrow.scale.setScalar((relajado ? 1.4 : 1) * (1 - noche * 0.15));
       guideArrow.position.set(S.pos.x + (tg.x - S.pos.x) / d * 0.9, S.pos.y + 2.75 + Math.sin(now * 4) * 0.06, S.pos.z + (tg.z - S.pos.z) / d * 0.9);
-      guideArrow.lookAt(tg.x, tg.y != null ? tg.y : guideArrow.position.y, tg.z);
+      guideArrow.lookAt(tg.x, (tg.y != null ? tg.y : guideArrow.position.y) + 1.4, tg.z);
     }
   }
 
