@@ -16,7 +16,8 @@
    - Los personajes nuevos y los diseños (Iguaca, la Abuela, el Papá) son propuestas hasta que él diga sí. Se anotan en `docs/CANON_REGISTRY.md` como PROVISIONAL.
 3. **Vittata no se cambia.** Las referencias salen de `assets/models/vittata.glb` tal cual.
 4. **Propiedad intelectual (clave para la televisión).**
-   - No subas a Higgsfield renders de los templos ni de los árboles de KitBash3D y Archmodels. Tampoco las cotorras cosplay (Mario, Joker…). Su licencia comercial no está comprobada (`docs/ASSET_AUDIT.md`, `docs/COMIC_SERIES_BIBLE.md`).
+   - **Las cotorras son de Kelvin:** él pagó los modelos y las pieles (los 22 .blend, `vittata.glb` y `assets/textures/pieles/`). Están aprobadas para subir a Higgsfield y para la serie (Kelvin, 27-nov).
+   - No subas a Higgsfield renders de los templos ni de los árboles de KitBash3D y Archmodels. Tampoco las cotorras cosplay (Mario, Joker…): el modelo es de Kelvin, pero el personaje es de Nintendo y DC. Su licencia comercial no está comprobada (`docs/ASSET_AUDIT.md`, `docs/COMIC_SERIES_BIBLE.md`).
    - Los fondos de la serie se generan nuevos en Higgsfield, inspirados en Puerto Rico y en `docs/img/referencia_mapa_kelvin.jpg`.
 5. **Bandera de Puerto Rico:** solo si sale fiel (`docs/BANDERA_PR_GUIA.md`).
 6. **Público de todas las edades.** El gancho es la aventura y el humor. Nada de «aprende ciencia» y nada que asuste o sea violento.
