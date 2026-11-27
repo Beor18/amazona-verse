@@ -41,15 +41,15 @@
 Los .blend originales de Kelvin no están en el repo. Hoy no hacen falta.
 
 ## Fases
-- [ ] **S1 · Paquete de personajes (gratis).**
+- [x] **S1 · Paquete de personajes (gratis).** · `abef400` · 8 personajes × 4 vistas desde sus .glb y fichas en `docs/serie/PERSONAJES.md`.
   - Renderiza cada personaje desde su .glb con el Chromium de la sesión (Three.js), sobre fondo neutro: de frente, de lado, de 3/4 y en una pose de acción.
   - Guárdalo en `docs/serie/personajes/<id>/`.
   - Escribe una ficha corta por personaje en `docs/serie/PERSONAJES.md`: aspecto, personalidad, cómo habla y qué quiere.
-- [ ] **S2 · Subir a Higgsfield (gratis).**
+- [x] **S2 · Subir a Higgsfield (gratis).** · este commit · 8 elementos «completed» en My Elements, 0 créditos (saldo 7,511.8). Ids en `docs/serie/HIGGSFIELD_IDS.md`.
   - Sube esas imágenes (`media_upload` → `media_confirm`).
   - Crea un elemento o personaje por cada uno (`elements_create`), para que salgan iguales en cada toma.
   - Anota los ids en `docs/serie/HIGGSFIELD_IDS.md`. Son ids, no claves.
-- [ ] **S3 · Biblia de la serie.**
+- [x] **S3 · Biblia de la serie.** · este commit · `docs/serie/BIBLIA_SERIE.md` con 3 pilotos (A épico, B comedia Chispa, C perforadora). **Esperando que Kelvin escoja.**
   - `docs/serie/BIBLIA_SERIE.md`: premisa, tono, el formato (episodios de 60 a 90 s para redes y 11 min para la televisión) y cómo cada episodio termina con gancho.
   - **3 ideas de piloto** para que Kelvin escoja.
   - Parte de la temporada 1 «El mundo roto»: Vittata quiere hacerlo todo sola y aprende a trabajar con Iguaca y los 36.
@@ -72,3 +72,7 @@ Los .blend originales de Kelvin no están en el repo. Hoy no hacen falta.
 
 ## Bitácora
 - 27-nov · La coordinadora (Claude Code) abre la tarea por encargo de Kelvin. El piloto de 60 a 90 s queda propuesto. La llevará Claude web.
+- 27-nov · Claude web: S1 a S3 hechas, sin gastar créditos.
+  - Los .glb de piezas (Ingeniera, Tuerca, Chispa, Moon, Constructor, Guardián) traen las rotaciones de la animación repetidas en cada pieza y les falta la altura de la cabeza y los hombros. Para las fotos se recolocó, sin tocar los .glb. Posible problema también en el juego: revisarlo aparte.
+  - El proxy bloquea `upload.higgsfield.ai`, así que las imágenes se importaron desde las URL públicas de GitHub.
+  - Siguiente: S4 (Iguaca, la Abuela y el Papá) con generaciones gratis cuando Kelvin escoja piloto y estilo.
