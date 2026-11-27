@@ -53,7 +53,7 @@ Los .blend originales de Kelvin no están en el repo. Hoy no hacen falta.
   - `docs/serie/BIBLIA_SERIE.md`: premisa, tono, el formato (episodios de 60 a 90 s para redes y 11 min para la televisión) y cómo cada episodio termina con gancho.
   - **3 ideas de piloto** para que Kelvin escoja.
   - Parte de la temporada 1 «El mundo roto»: Vittata quiere hacerlo todo sola y aprende a trabajar con Iguaca y los 36.
-- [ ] **S4 · Personajes que faltan (propuesta).**
+- [x] **S4 · Personajes que faltan (propuesta).** · este commit · 3 hojas A/B/C (Abuela, Papá, Iguaca) con GPT Image 2.6 Unlimited en la web, 0 créditos. `docs/serie/PROPUESTAS_S4.md`. **Esperando que Kelvin escoja.**
   - Iguaca, la Abuela y el Papá: todos *A. vittata*, pero que se distingan de Vittata por la edad, el porte o un rasgo propio.
   - Haz 2 o 3 propuestas de cada uno con generaciones gratis. Kelvin escoge.
 - [ ] **S5 · Prueba (con el «sí» de Kelvin).**
@@ -76,3 +76,4 @@ Los .blend originales de Kelvin no están en el repo. Hoy no hacen falta.
   - Los .glb de piezas (Ingeniera, Tuerca, Chispa, Moon, Constructor, Guardián) traen las rotaciones de la animación repetidas en cada pieza y les falta la altura de la cabeza y los hombros. Para las fotos se recolocó, sin tocar los .glb. Posible problema también en el juego: revisarlo aparte.
   - El proxy bloquea `upload.higgsfield.ai`, así que las imágenes se importaron desde las URL públicas de GitHub.
   - Siguiente: S4 (Iguaca, la Abuela y el Papá) con generaciones gratis cuando Kelvin escoja piloto y estilo.
+- 27-nov · Claude web: S4 hecha en la web de Higgsfield (Unlimited, saldo sin cambios). Las versiones completas están en la galería de Higgsfield; en el repo solo hay vistas previas, porque el proxy bloquea la CDN.

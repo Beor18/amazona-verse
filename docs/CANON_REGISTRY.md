@@ -45,3 +45,4 @@ Estados: **CONFIRMADO** (aprobado por Kelvin o en sus archivos) · **PROVISIONAL
 | La ciudad viva se descubre (Kelvin, 4-nov): en cada visita el jugador encuentra pequeños comportamientos distintos (sorpresas que rotan), no solo una vista bonita | CONFIRMADO | Kelvin, 4 nov 2026 |
 | La Maraña (24b): elemento fantástico del universo, con misterio, exploración y función narrativa o jugable; nunca presentada como hecho histórico de Puerto Rico | CONFIRMADO | Kelvin, 4 nov 2026 |
 | Iguaca y las mentoras (24c): voces aprobadas tal cual en `docs/equipo/PROPUESTA_MENTORAS_24C.md` (Iguaca con iniciativa; Vinacea calma, Festiva fiestera, Oratrix teatral, Lilacina preguntona, Versicolor soñadora) | CONFIRMADO | Kelvin, 4 nov 2026 («todas ✅») |
+| Diseños de la Abuela, el Papá e Iguaca para la serie: 3 propuestas de cada uno (A, B y C) en `docs/serie/PROPUESTAS_S4.md` | PROVISIONAL (Kelvin escoge) | Serie S4, 27 nov 2026 |
